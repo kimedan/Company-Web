@@ -12,6 +12,7 @@
   "dependencies": {
     "firebase": "^12.13.0",
     "lucide-react": "0.379.0",
+    "motion": "^12.40.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-router-dom": "6.22.3"
