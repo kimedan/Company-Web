@@ -16,7 +16,8 @@ interface SiteContextType {
   t: typeof TRANSLATIONS['KOR'];
   setLanguage: (lang: Language) => void;
   updateConfig: (newConfig: Partial<SiteConfig>) => void;
-  addPost: (post: Omit<Post, 'id' | 'date' | 'views'>) => void;
+  addPost: (post: Omit<Post, 'id' | 'views'> & { date?: string }) => void;
+  updatePost: (id: string, updates: Partial<Post>) => void;
   deletePost: (id: string) => void;
   addCertification: (cert: Omit<Certification, 'id'>) => void;
   updateCertification: (id: string, updates: Partial<Certification>) => void;
@@ -274,15 +275,23 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  const addPost = (newPostData: Omit<Post, 'id' | 'date' | 'views'>) => {
+  const addPost = (newPostData: Omit<Post, 'id' | 'views'> & { date?: string }) => {
     setPosts(prev => {
       const newPost: Post = {
         ...newPostData,
         id: Date.now().toString(),
-        date: new Date().toISOString().split('T')[0],
+        date: newPostData.date || new Date().toISOString().split('T')[0],
         views: 0,
       };
       const updated = [newPost, ...prev];
+      saveData('posts', updated);
+      return updated;
+    });
+  };
+
+  const updatePost = (id: string, updates: Partial<Post>) => {
+    setPosts(prev => {
+      const updated = prev.map(p => p.id === id ? { ...p, ...updates } : p);
       saveData('posts', updated);
       return updated;
     });
@@ -446,6 +455,7 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLanguage,
       updateConfig, 
       addPost, 
+      updatePost,
       deletePost,
       addCertification,
       updateCertification,

@@ -8,6 +8,7 @@ export const TRANSLATIONS = {
       products: '제품소개',
       process: '공정소개',
       rnd: '연구소',
+      news: '회사 소식',
       support: '고객지원',
       contact: '견적문의',
       // Sub-menu items
@@ -366,6 +367,7 @@ export const TRANSLATIONS = {
       products: 'Products',
       process: 'Process',
       rnd: 'R&D',
+      news: 'Company News',
       support: 'Support',
       contact: 'Contact Us',
       intro: 'Overview',
@@ -723,6 +725,7 @@ export const TRANSLATIONS = {
       products: '製品紹介',
       process: '生産工程',
       rnd: '研究所',
+      news: '会社ニュース',
       support: '顧客サポート',
       contact: 'お問い合わせ',
       intro: '会社概要',

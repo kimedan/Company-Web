@@ -1104,137 +1104,504 @@ export const AdminContent: React.FC = () => {
 
 // --- Post Manager Component ---
 export const AdminPosts: React.FC = () => {
-  const { posts, deletePost, addPost } = useSite();
+  const { posts, deletePost, addPost, updatePost } = useSite();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newPost, setNewPost] = useState({
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const [formData, setFormData] = useState({
     title: "",
-    category: "공지사항",
+    category: "보도자료",
     author: "관리자",
-    status: "Published" as const,
+    date: new Date().toISOString().split("T")[0],
+    status: "Published" as "Published" | "Draft",
+    content: "",
+    imageUrl: "",
+    additionalImages: [] as string[],
   });
+
+  const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
+  const [isUploadingAttachments, setIsUploadingAttachments] = useState(false);
+
+  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingThumbnail(true);
+    try {
+      const url = await uploadImageToStorage(file, "news_thumbnails/");
+      setFormData((prev) => ({ ...prev, imageUrl: url }));
+    } catch (err) {
+      console.error(err);
+      alert("대표 이미지 업로드에 실패했습니다.");
+    } finally {
+      setIsUploadingThumbnail(false);
+    }
+  };
+
+  const handleAttachmentsUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setIsUploadingAttachments(true);
+    try {
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const url = await uploadImageToStorage(files[i], "news_attachments/");
+        uploadedUrls.push(url);
+      }
+      setFormData((prev) => ({
+        ...prev,
+        additionalImages: [...(prev.additionalImages || []), ...uploadedUrls],
+      }));
+    } catch (err) {
+      console.error(err);
+      alert("첨부 이미지 업로드 중 오류가 발생했습니다.");
+    } finally {
+      setIsUploadingAttachments(false);
+    }
+  };
+
+  const removeAttachment = (urlToRemove: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      additionalImages: prev.additionalImages.filter((url) => url !== urlToRemove),
+    }));
+  };
+
+  const openCreateModal = () => {
+    setEditingPostId(null);
+    setFormData({
+      title: "",
+      category: "보도자료",
+      author: "관리자",
+      date: new Date().toISOString().split("T")[0],
+      status: "Published",
+      content: "",
+      imageUrl: "",
+      additionalImages: [],
+    });
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (post: typeof posts[0]) => {
+    setEditingPostId(post.id);
+    setFormData({
+      title: post.title,
+      category: post.category || "보도자료",
+      author: post.author || "관리자",
+      date: post.date || new Date().toISOString().split("T")[0],
+      status: post.status || "Published",
+      content: post.content || "",
+      imageUrl: post.imageUrl || "",
+      additionalImages: post.additionalImages || [],
+    });
+    setIsModalOpen(true);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newPost.title) return;
-    addPost(newPost);
+    if (!formData.title) return;
+
+    if (editingPostId) {
+      if (updatePost) {
+        updatePost(editingPostId, formData);
+      }
+    } else {
+      addPost(formData);
+    }
     setIsModalOpen(false);
-    setNewPost({
-      title: "",
-      category: "공지사항",
-      author: "관리자",
-      status: "Published",
-    });
   };
+
+  // Filter posts based on search query
+  const filteredPosts = posts.filter(
+    (post) =>
+      post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      post.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <AdminLayout>
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+        <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-bold text-gray-900">게시글 관리</h2>
             <p className="text-sm text-gray-500">
-              사이트의 공지사항 및 뉴스를 관리합니다.
+              DMC Room 및 사이트 공지사항과 보도자료를 관리합니다.
             </p>
           </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-brand-blue text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-blue-900 transition-colors"
-          >
-            <Plus className="w-4 h-4" /> 게시글 작성
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="제목/카테고리 검색..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand-blue w-48 sm:w-64"
+              />
+            </div>
+            <button
+              onClick={openCreateModal}
+              className="bg-brand-blue text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-blue-900 transition-colors shrink-0"
+            >
+              <Plus className="w-4 h-4" /> 게시글 작성
+            </button>
+          </div>
         </div>
 
-        {/* Table */}
+        {/* Table representation */}
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                <th className="px-6 py-4 font-medium">대표이미지</th>
                 <th className="px-6 py-4 font-medium">제목</th>
                 <th className="px-6 py-4 font-medium">카테고리</th>
                 <th className="px-6 py-4 font-medium">작성자</th>
-                <th className="px-6 py-4 font-medium">날짜</th>
+                <th className="px-6 py-4 font-medium">작성일</th>
                 <th className="px-6 py-4 font-medium">상태</th>
                 <th className="px-6 py-4 font-medium">조회수</th>
                 <th className="px-6 py-4 font-medium text-right">관리</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {posts.map((post) => (
-                <tr
-                  key={post.id}
-                  className="hover:bg-gray-50 transition-colors"
-                >
-                  <td className="px-6 py-4">
-                    <span className="font-medium text-gray-900 block">
-                      {post.title}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    <span className="px-2 py-1 bg-gray-100 rounded text-xs">
-                      {post.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {post.author}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {post.date}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${post.status === "Published" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}
-                    >
-                      {post.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {post.views.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => deletePost(post.id)}
-                      className="text-gray-400 hover:text-red-500 transition-colors p-2"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+              {filteredPosts.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500 text-sm">
+                    검색 결과 또는 등록된 게시글이 없습니다.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredPosts.map((post) => (
+                  <tr key={post.id} className="hover:bg-gray-50/50 transition-colors">
+                    {/* Representative Image Column */}
+                    <td className="px-6 py-3">
+                      <div className="w-12 h-12 rounded-lg bg-gray-50 border border-gray-100 overflow-hidden flex items-center justify-center">
+                        {post.imageUrl ? (
+                          <img
+                            src={post.imageUrl}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                        ) : (
+                          <ImageIcon className="w-5 h-5 text-gray-300" />
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="font-semibold text-gray-900 block max-w-xs sm:max-w-md truncate">
+                        {post.title}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      <span className="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-semibold">
+                        {post.category || "회사소식"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500">{post.author || "관리자"}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500 font-mono">{post.date}</td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                          post.status === "Published"
+                            ? "bg-green-50 text-green-700 border border-green-100"
+                            : "bg-yellow-50 text-yellow-700 border border-yellow-100"
+                        }`}
+                      >
+                        {post.status === "Published" ? "게시됨" : "임시저장"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 font-mono">
+                      {(post.views || 0).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-1">
+                        <button
+                          onClick={() => openEditModal(post)}
+                          className="text-gray-400 hover:text-brand-blue hover:bg-gray-50 rounded-lg p-2 transition-colors"
+                          title="수정"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
+                              deletePost(post.id);
+                            }
+                          }}
+                          className="text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg p-2 transition-colors"
+                          title="삭제"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
-      {/* Modal */}
+
+      {/* Modal - Rich Dialog */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl">
-            <h3 className="text-lg font-bold mb-4">새 게시글 작성</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white rounded-3xl w-full max-w-3xl p-6 sm:p-8 shadow-2xl relative my-8">
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute right-6 top-6 text-gray-400 hover:text-gray-600 transition-colors p-1 bg-gray-55 hover:bg-gray-100 rounded-full"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h3 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-4 mb-6">
+              {editingPostId ? "게시글 수정" : "새 게시글 작성"}
+            </h3>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid sm:grid-cols-2 gap-6">
+                {/* Title */}
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">제목</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="제목을 입력하세요."
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-brand-blue text-sm"
+                  />
+                </div>
+
+                {/* Category Selection / input */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-medium">
+                    카테고리
+                  </label>
+                  <div className="flex gap-2">
+                    <select
+                      value={["보도자료", "공지사항", "전시회", "인증소식", "신제품"].includes(formData.category) ? formData.category : "custom"}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val !== "custom") {
+                          setFormData({ ...formData, category: val });
+                        } else {
+                          setFormData({ ...formData, category: "" });
+                        }
+                      }}
+                      className="border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-brand-blue text-sm bg-white"
+                    >
+                      <option value="보도자료">보도자료</option>
+                      <option value="공지사항">공지사항</option>
+                      <option value="전시회">전시회</option>
+                      <option value="인증소식">인증소식</option>
+                      <option value="신제품">신제품</option>
+                      <option value="custom">직접 입력...</option>
+                    </select>
+                    {!["보도자료", "공지사항", "전시회", "인증소식", "신제품"].includes(formData.category) && (
+                      <input
+                        type="text"
+                        placeholder="카테고리명"
+                        value={formData.category}
+                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                        className="flex-1 border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-brand-blue text-sm"
+                      />
+                    )}
+                  </div>
+                </div>
+
+                {/* Datepicker */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">작성일</label>
+                  <input
+                    type="date"
+                    required
+                    value={formData.date}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-brand-blue text-sm font-mono"
+                  />
+                </div>
+
+                {/* Author */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">작성자</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.author}
+                    onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                    className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-brand-blue text-sm"
+                  />
+                </div>
+
+                {/* Status Toggle */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-medium">
+                    게시 상태
+                  </label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) =>
+                      setFormData({ ...formData, status: e.target.value as "Published" | "Draft" })
+                    }
+                    className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-brand-blue text-sm bg-white"
+                  >
+                    <option value="Published">게시 (공개)</option>
+                    <option value="Draft">임시 저장 (비공개)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Representative Image (Thumbnail) */}
+              <div className="border border-gray-100 rounded-2xl p-4 bg-gray-50/50">
+                <label className="block text-sm font-bold text-gray-800 mb-2">대표 이미지 (썸네일)</label>
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  <div className="w-28 h-20 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden flex items-center justify-center shrink-0 relative group">
+                    {formData.imageUrl ? (
+                      <>
+                        <img
+                          src={formData.imageUrl}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setFormData((prev) => ({ ...prev, imageUrl: "" }))}
+                          className="absolute inset-0 bg-black/60 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-xl"
+                          title="대표이미지 삭제"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </>
+                    ) : (
+                      <ImageIcon className="w-6 h-6 text-gray-300" />
+                    )}
+                  </div>
+                  <div className="flex-1 w-full">
+                    <label
+                      className={`cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-colors ${
+                        isUploadingThumbnail ? "opacity-50 pointer-events-none" : ""
+                      }`}
+                    >
+                      {isUploadingThumbnail ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          업로드 중...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-3.5 h-3.5" />
+                          이미지 찾기 및 업로드
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleThumbnailUpload}
+                        className="hidden"
+                        disabled={isUploadingThumbnail}
+                      />
+                    </label>
+                    <p className="text-[11px] text-gray-400 mt-1.5 leading-relaxed">
+                      DMC Room 목록 페이지에 노출될 대표 가로형 이미지를 권장합니다. (16:10 비율 최적)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Post Content */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  제목
-                </label>
-                <input
-                  type="text"
-                  value={newPost.title}
-                  onChange={(e) =>
-                    setNewPost({ ...newPost, title: e.target.value })
-                  }
-                  className="w-full border border-gray-300 rounded-lg p-2"
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">본문 내용</label>
+                <textarea
+                  required
+                  rows={8}
+                  placeholder="보도자료 소식 혹은 공지 게시글 내용을 상세히 기재해 주세요."
+                  value={formData.content}
+                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-brand-blue text-sm font-sans whitespace-pre-line resize-y"
                 />
               </div>
-              <div className="flex justify-end gap-3 mt-6">
+
+              {/* Gallery / Additional Images */}
+              <div className="border border-gray-100 rounded-2xl p-4 bg-gray-50/50">
+                <div className="flex justify-between items-center mb-3">
+                  <label className="block text-sm font-bold text-gray-800">첨부 파일/추가 이미지</label>
+                  <label
+                    className={`cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-700 shadow-sm hover:bg-gray-50 transition-all ${
+                      isUploadingAttachments ? "opacity-50 pointer-events-none" : ""
+                    }`}
+                  >
+                    {isUploadingAttachments ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        업로드 중...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="w-3.5 h-3.5" />
+                        추가 이미지 선택
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleAttachmentsUpload}
+                      className="hidden"
+                      disabled={isUploadingAttachments}
+                    />
+                  </label>
+                </div>
+
+                {/* Additional Images Grid with Hover Deletes */}
+                {formData.additionalImages && formData.additionalImages.length > 0 ? (
+                  <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
+                    {formData.additionalImages.map((imgUrl, i) => (
+                      <div
+                        key={i}
+                        className="aspect-square bg-white border border-gray-100 rounded-lg overflow-hidden relative group shadow-sm"
+                      >
+                        <img
+                          src={imgUrl}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeAttachment(imgUrl)}
+                          className="absolute inset-0 bg-black/60 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                          title="첨부파일 삭제"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-400 py-3 text-center italic bg-white border border-gray-150/60 rounded-xl border-dashed">
+                    게시물 하단에 추가 노출시킬 첨부 이미지가 있는 경우 등록할 수 있습니다. (다중 선택 가능)
+                  </p>
+                )}
+              </div>
+
+              {/* Footer controls */}
+              <div className="border-t border-gray-100 pt-6 flex justify-end gap-3.5">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-xl text-sm font-semibold transition-colors"
                 >
-                  취소
+                  작성 취소
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-brand-blue text-white rounded-lg hover:bg-blue-900"
+                  disabled={isUploadingThumbnail || isUploadingAttachments}
+                  className="px-6 py-2.5 bg-brand-blue hover:bg-blue-900 disabled:opacity-50 text-white rounded-xl text-sm font-bold transition-all flex items-center gap-2 shadow-md active:scale-95"
                 >
+                  <Save className="w-4 h-4" />
                   저장하기
                 </button>
               </div>

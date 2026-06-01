@@ -80,6 +80,7 @@ const Header: React.FC = () => {
     if (key === "제품소개") return t.nav.products;
     if (key === "공정소개") return t.nav.process;
     if (key === "연구소") return t.nav.rnd;
+    if (key === "회사소식") return t.nav.news;
     if (key === "고객지원") return t.nav.support;
 
     // Sub items (About)
@@ -150,7 +151,7 @@ const Header: React.FC = () => {
                 >
                   <Link
                     to={item.path}
-                    className={`text-sm transition-colors duration-200 flex items-center gap-1.5 font-medium
+                    className={`text-[15px] transition-colors duration-200 flex items-center gap-1.5 font-medium
                       ${
                         !isTransparent
                           ? isParentActive(item.path)
@@ -215,7 +216,7 @@ const Header: React.FC = () => {
                                 }
                               `}
                             >
-                              <span className="block text-[13px] font-medium leading-tight">
+                              <span className="block text-[14.5px] font-medium leading-tight">
                                 {getNavLabel(sub.label)}
                               </span>
                             </Link>
@@ -239,13 +240,13 @@ const Header: React.FC = () => {
               {/* Language Switcher */}
               <div className="relative group">
                 <button
-                  className={`flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-full transition-all ${
+                  className={`flex items-center gap-1 text-[13.5px] font-bold px-3 py-2 rounded-full transition-all ${
                     !isTransparent
                       ? "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
                       : "text-white/80 hover:bg-white/10 hover:text-white"
                   }`}
                 >
-                  <Globe className="w-3.5 h-3.5" />
+                  <Globe className="w-4 h-4" />
                   <span>{language}</span>
                 </button>
                 <div className="absolute top-full right-0 pt-2 w-24 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50">
@@ -254,7 +255,7 @@ const Header: React.FC = () => {
                       <button
                         key={lang}
                         onClick={() => setLanguage(lang as Language)}
-                        className={`w-full text-left px-4 py-2 text-xs font-medium hover:bg-gray-50 ${language === lang ? "text-brand-blue bg-blue-50" : "text-gray-600"}`}
+                        className={`w-full text-left px-4 py-2 text-[13.5px] font-medium hover:bg-gray-50 ${language === lang ? "text-brand-blue bg-blue-50" : "text-gray-600"}`}
                       >
                         {lang}
                       </button>
@@ -267,7 +268,7 @@ const Header: React.FC = () => {
               <Link to="/contact">
                 <button
                   className={`
-                  group relative overflow-hidden flex items-center gap-2 text-sm font-bold px-6 py-2.5 rounded-full transition-all duration-300 ease-spring
+                  group relative overflow-hidden flex items-center gap-2 text-[15px] font-bold px-6 py-2.5 rounded-full transition-all duration-300 ease-spring
                   ${
                     !isTransparent
                       ? "text-gray-900 bg-transparent hover:bg-gray-100"
@@ -279,7 +280,7 @@ const Header: React.FC = () => {
                     {t.nav.contact}
                     {/* Arrow Animation */}
                     <ArrowRight
-                      className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1"
+                      className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
                       strokeWidth={2.5}
                     />
                   </span>
@@ -319,7 +320,7 @@ const Header: React.FC = () => {
                 <button
                   key={lang}
                   onClick={() => setLanguage(lang as Language)}
-                  className={`px-3 py-1 text-xs font-bold rounded ${language === lang ? "bg-white shadow-sm text-brand-blue" : "text-gray-500"}`}
+                  className={`px-3 py-1 text-[13.5px] font-bold rounded ${language === lang ? "bg-white shadow-sm text-brand-blue" : "text-gray-500"}`}
                 >
                   {lang}
                 </button>

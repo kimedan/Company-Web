@@ -38,6 +38,10 @@ export const NAV_ITEMS: NavItem[] = [
     path: '/rnd',
   },
   {
+    label: '회사소식',
+    path: '/news',
+  },
+  {
     label: '고객지원',
     path: '/support',
   }

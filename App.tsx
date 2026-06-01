@@ -31,6 +31,7 @@ import ProcessPage from "./pages/Process";
 import QualityPage from "./pages/Quality";
 import RndPage from "./pages/RndPage";
 import AboutPage from "./pages/AboutPage";
+import NewsPage from "./pages/NewsPage";
 import {
   Phone,
   Mail,
@@ -443,6 +444,24 @@ const App: React.FC = () => {
             {/* Replaced SupportPage with ContactPage */}
             <Route path="/support" element={<ContactPage />} />
             <Route path="/contact" element={<ContactPage />} />
+
+            {/* News Room Routes */}
+            <Route
+              path="/news"
+              element={
+                <PublicLayout>
+                  <NewsPage />
+                </PublicLayout>
+              }
+            />
+            <Route
+              path="/news/:id"
+              element={
+                <PublicLayout>
+                  <NewsPage />
+                </PublicLayout>
+              }
+            />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

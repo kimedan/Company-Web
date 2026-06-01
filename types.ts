@@ -42,6 +42,8 @@ export interface Post {
   status: 'Published' | 'Draft';
   views: number;
   content?: string; // HTML or Markdown content
+  imageUrl?: string; // Representative thumbnail URL
+  additionalImages?: string[]; // Multiple additional image URLs
 }
 
 export type BorderRadiusSize = 'rounded-none' | 'rounded-md' | 'rounded-xl' | 'rounded-full';
