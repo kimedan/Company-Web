@@ -172,20 +172,24 @@ const Hero: React.FC = () => {
       </div>
 
       {/* 
-        Bottom Gradient Blend - "Seam Eraser"
-        Technique: Tall gradient with variable opacity + Backdrop Blur
-        This creates a smooth transition from the dark video/image to the white content section.
-        Updated: Height reduced to h-28 and opacity set to via-white/15 to blend softly with the main background.
+        Bottom Transition - Smooth Blur & Ambient Shadow
+        Softens the transition from the dark hero to the light section below
       */}
-      <div className="absolute bottom-0 left-0 w-full h-28 z-10 pointer-events-none">
-        {/* Layer 1: Soft fade to white (matches next section color) */}
-        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/15 to-transparent" />
-
-        {/* Layer 2: Subtle blur at the very bottom to dissolve image grain */}
-        <div
-          className="absolute bottom-0 left-0 w-full h-14 backdrop-blur-[2px] mask-image-gradient-to-t"
-          style={{ maskImage: "linear-gradient(to top, black, transparent)" }}
+      <div className="absolute bottom-0 left-0 w-full h-40 z-10 pointer-events-none overflow-hidden">
+        {/* Richer dark vignette to enrich base shadow and contrast with scroll indicator */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        
+        {/* Softer backdrop blur to smoothly diffuse the image/video edge even more naturally */}
+        <div 
+          className="absolute inset-0 backdrop-blur-[0.8px]"
+          style={{
+            maskImage: "linear-gradient(to top, black 20%, transparent 80%)",
+            WebkitMaskImage: "linear-gradient(to top, black 20%, transparent 80%)"
+          }}
         />
+        
+        {/* Faint ambient transition tint matching the next section's background */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#f8f8f8]/30 to-transparent" />
       </div>
 
       {/* Scroll Indicator */}

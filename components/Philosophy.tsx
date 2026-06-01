@@ -116,7 +116,7 @@ const Philosophy: React.FC = () => {
   return (
     <section
       id="philosophy"
-      className="py-32 bg-white overflow-hidden relative"
+      className="py-32 bg-[#f8f8f8] overflow-hidden relative"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Section */}
