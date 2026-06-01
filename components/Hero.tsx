@@ -4,8 +4,6 @@ import Button from "./Button";
 import {
   ArrowDown,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Calendar,
   ArrowRight,
   ArrowUpRight,
@@ -23,81 +21,11 @@ const Hero: React.FC = () => {
   const scrollIndicatorRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Teaser Horizontal Scrolling Refs & State
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-
   // Filter only published articles
   const publishedPosts = posts
     ? posts.filter((post) => post.status === "Published")
     : [];
 
-  const updateScrollButtons = () => {
-    if (scrollContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
-      setCanScrollLeft(scrollLeft > 5);
-      // Allow slight threshold for float calculations
-      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 5);
-    }
-  };
-
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (container) {
-      container.addEventListener("scroll", updateScrollButtons);
-      // Initial check
-      updateScrollButtons();
-      
-      // Re-check on window resize
-      window.addEventListener("resize", updateScrollButtons);
-    }
-    return () => {
-      if (container) {
-        container.removeEventListener("scroll", updateScrollButtons);
-      }
-      window.removeEventListener("resize", updateScrollButtons);
-    };
-  }, [publishedPosts]);
-
-  // Handle manual navigation scroll
-  const scrollTeaser = (direction: "left" | "right") => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = 404; // scroll by one card width (380px card + 24px gap)
-      scrollContainerRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-    }
-  };
-
-  // Autoplay automatic horizontal scrolling when multiple posts exist and user is not hovering
-  useEffect(() => {
-    if (publishedPosts.length <= 1 || isHovered) return;
-
-    const intervalId = setInterval(() => {
-      if (scrollContainerRef.current) {
-        const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
-        
-        // If reached close to the end, return smoothly to start
-        if (scrollLeft + clientWidth >= scrollWidth - 25) {
-          scrollContainerRef.current.scrollTo({
-            left: 0,
-            behavior: "smooth",
-          });
-        } else {
-          // Scroll by one card position smoothly (380px card + 24px gap = 404px)
-          scrollContainerRef.current.scrollBy({
-            left: 404,
-            behavior: "smooth",
-          });
-        }
-      }
-    }, 4000); // Transitions to next card every 4 seconds
-
-    return () => clearInterval(intervalId);
-  }, [publishedPosts, isHovered]);
 
   useEffect(() => {
     let ticking = false;
@@ -272,150 +200,152 @@ const Hero: React.FC = () => {
         Seamless Teaser Section (Second Fold)
         No break, transparently overlaying the extended hero background 
       */}
-      {publishedPosts.length > 0 && (
-        <section
-          id="dmc-room-teaser"
-          className="relative py-24 z-10 w-full min-h-[600px] flex items-center border-b border-gray-950/40"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        >
-          {/* Subtle overlay shading specifically to enrich readability of news items on top of background texture */}
-          <div className="absolute inset-0 bg-black/25 backdrop-blur-[0.5px] pointer-events-none" />
+      {publishedPosts.length > 0 && (() => {
+        const topFive = publishedPosts.slice(0, 5);
+        const cardStep = 404; // 380px card + 24px gap
+        const translateDistance = topFive.length * cardStep;
+        
+        // Match speed of 38px per second for extreme luxury smoothness
+        const animationDuration = translateDistance / 38;
 
-          {/* Decorative Ambient Glows */}
-          <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[400px] h-[400px] bg-brand-blue/10 rounded-full blur-[140px] pointer-events-none" />
-          <div className="absolute bottom-0 right-10 w-[300px] h-[300px] bg-[#64748b]/5 rounded-full blur-[120px] pointer-events-none" />
+        // Triple-duplicate to ensure gapless marquee loop even on ultra-wide screens
+        const marqueePosts = [...topFive, ...topFive, ...topFive];
 
-          {/* Grid Pattern Background */}
-          <div 
-            className="absolute inset-0 bg-[linear-gradient(to_right,#1f293708_1px,transparent_1px),linear-gradient(to_bottom,#1f293708_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" 
-            style={{ maskImage: "radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)", WebkitMaskImage: "radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)" }}
-          />
+        return (
+          <section
+            id="dmc-room-teaser"
+            className="relative py-24 z-10 w-full min-h-[600px] flex items-center border-b border-gray-950/40"
+          >
+            {/* Dynamic CSS Keyframe Injection for seamless infinite looping */}
+            <style>{`
+              @keyframes marqueeContinuous {
+                0% {
+                  transform: translate3d(0, 0, 0);
+                }
+                100% {
+                  transform: translate3d(-${translateDistance}px, 0, 0);
+                }
+              }
+              .animate-loop-marquee {
+                display: flex;
+                gap: 24px;
+                width: max-content;
+                animation: marqueeContinuous ${animationDuration}s linear infinite;
+              }
+              .animate-loop-marquee:hover {
+                animation-play-state: paused;
+              }
+            `}</style>
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-            {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-12 gap-6">
-              <div className="space-y-3">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-                  <span className="w-1.5 h-1.5 bg-[#4f46e5] rounded-full animate-pulse" />
-                  <span className="text-[11px] font-bold text-gray-400 tracking-[0.15em] uppercase">DMC MEDIA ROOM</span>
+            {/* Subtle overlay shading specifically to enrich readability of news items on top of background texture */}
+            <div className="absolute inset-0 bg-black/25 backdrop-blur-[0.5px] pointer-events-none" />
+
+            {/* Decorative Ambient Glows */}
+            <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[400px] h-[400px] bg-brand-blue/10 rounded-full blur-[140px] pointer-events-none" />
+            <div className="absolute bottom-0 right-10 w-[300px] h-[300px] bg-[#64748b]/5 rounded-full blur-[120px] pointer-events-none" />
+
+            {/* Grid Pattern Background */}
+            <div 
+              className="absolute inset-0 bg-[linear-gradient(to_right,#1f293708_1px,transparent_1px),linear-gradient(to_bottom,#1f293708_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" 
+              style={{ maskImage: "radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)", WebkitMaskImage: "radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)" }}
+            />
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full overflow-hidden">
+              {/* Header Section */}
+              <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-12 gap-6">
+                <div className="space-y-3">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+                    <span className="w-1.5 h-1.5 bg-[#4f46e5] rounded-full animate-pulse" />
+                    <span className="text-[11px] font-bold text-gray-400 tracking-[0.15em] uppercase">DMC MEDIA ROOM</span>
+                  </div>
+                  <h2 className="text-2xl md:text-3.5xl font-bold text-white tracking-tight font-sans">
+                    DMC Room 소식
+                  </h2>
+                  <p className="text-sm md:text-base text-gray-300 max-w-xl font-light">
+                    대우경금속의 최신 정보와 혁신 활동을 가장 빠르게 전달해 드립니다.
+                  </p>
                 </div>
-                <h2 className="text-2xl md:text-3.5xl font-bold text-white tracking-tight font-sans">
-                  DMC Room 소식
-                </h2>
-                <p className="text-sm md:text-base text-gray-300 max-w-xl font-light">
-                  대우경금속의 최신 정보와 혁신 활동을 가장 빠르게 전달해 드립니다.
-                </p>
               </div>
 
-              {/* Navigation Controls */}
-              {publishedPosts.length > 2 && (
-                <div className="flex items-center gap-2 self-start md:self-end">
-                  <button
-                    onClick={() => scrollTeaser("left")}
-                    disabled={!canScrollLeft}
-                    className={`p-3 rounded-full border transition-all duration-300 ${
-                      canScrollLeft
-                        ? "border-white/10 text-white bg-white/5 hover:bg-white/10 hover:scale-105"
-                        : "border-white/5 text-gray-600 cursor-not-allowed opacity-40"
-                    }`}
-                    aria-label="이전 소식"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => scrollTeaser("right")}
-                    disabled={!canScrollRight}
-                    className={`p-3 rounded-full border transition-all duration-300 ${
-                      canScrollRight
-                        ? "border-white/10 text-white bg-white/5 hover:bg-white/10 hover:scale-105"
-                        : "border-white/5 text-gray-600 cursor-not-allowed opacity-40"
-                    }`}
-                    aria-label="다음 소식"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Horizontal Scrolling Card Container */}
-            <div
-              ref={scrollContainerRef}
-              className="flex gap-6 overflow-x-auto pt-6 pb-8 -mt-6 scrollbar-none snap-x snap-mandatory"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-            >
-              {publishedPosts.map((post) => {
-                const plainTextContent = post.content
-                  ? post.content.replace(/<[^>]*>/g, "").trim()
-                  : "";
-                
-                return (
-                  <div
-                    key={post.id}
-                    className="w-full sm:w-[380px] shrink-0 snap-start"
-                  >
-                    <Link
-                      to={`/news/${post.id}`}
-                      className="group block relative h-[300px] p-6 rounded-2xl border border-white/5 hover:border-white/15 bg-white/[0.02] hover:bg-white/[0.05] backdrop-blur-lg shadow-[0_12px_40px_rgba(0,0,0,0.2)] transition-all duration-300 hover:-translate-y-1.5 overflow-hidden flex flex-col justify-between"
-                    >
-                      {/* Subtle inner card lighting */}
-                      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.01] to-white/[0.04] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      
-                      {/* Top Details */}
-                      <div className="relative z-10 w-full">
-                        <div className="flex items-center justify-between gap-4 mb-4">
-                          {/* Badge */}
-                          <span className="inline-flex px-3 py-1 bg-white/5 text-white/90 border border-white/10 text-[10px] font-semibold uppercase tracking-wider rounded-full">
-                            {post.category || "회사소식"}
-                          </span>
+              {/* 
+                Continuous Seamless Marquee Container
+                Using vertical padding and negative margins to allow card hover translating to render completely unclipped 
+              */}
+              <div className="relative w-full overflow-hidden py-10 px-4 -mx-4">
+                <div className="animate-loop-marquee">
+                  {marqueePosts.map((post, idx) => {
+                    const plainTextContent = post.content
+                      ? post.content.replace(/<[^>]*>/g, "").trim()
+                      : "";
+                    
+                    return (
+                      <div
+                        key={`${post.id}-${idx}`}
+                        className="w-[380px] shrink-0"
+                      >
+                        <Link
+                          to={`/news/${post.id}`}
+                          className="group block relative h-[300px] p-6 rounded-2xl border border-white/5 hover:border-white/15 bg-white/[0.02] hover:bg-white/[0.06] backdrop-blur-lg shadow-[0_12px_40px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.45)] transition-all duration-300 hover:-translate-y-2.5 overflow-hidden flex flex-col justify-between"
+                        >
+                          {/* Subtle inner card lighting */}
+                          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.01] to-white/[0.04] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                           
-                          {/* Date */}
-                          <span className="flex items-center gap-1.5 text-xs text-gray-400 font-mono">
-                            <Calendar className="w-3.5 h-3.5 text-gray-500" />
-                            {post.date}
-                          </span>
-                        </div>
+                          {/* Top Details */}
+                          <div className="relative z-10 w-full">
+                            <div className="flex items-center justify-between gap-4 mb-4">
+                              {/* Badge */}
+                              <span className="inline-flex px-3 py-1 bg-white/5 text-white/90 border border-white/10 text-[10px] font-semibold uppercase tracking-wider rounded-full">
+                                {post.category || "회사소식"}
+                              </span>
+                              
+                              {/* Date */}
+                              <span className="flex items-center gap-1.5 text-xs text-gray-400 font-mono">
+                                <Calendar className="w-3.5 h-3.5 text-gray-500" />
+                                {post.date}
+                              </span>
+                            </div>
 
-                        {/* Title */}
-                        <h3 className="text-lg md:text-xl font-bold text-white group-hover:text-white transition-colors duration-200 line-clamp-2 leading-snug tracking-tight mb-3">
-                          {post.title}
-                        </h3>
+                            {/* Title */}
+                            <h3 className="text-lg md:text-xl font-bold text-white group-hover:text-white transition-colors duration-200 line-clamp-2 leading-snug tracking-tight mb-3">
+                              {post.title}
+                            </h3>
 
-                        {/* Content Snippet */}
-                        {plainTextContent && (
-                          <p className="text-sm text-gray-400 line-clamp-3 leading-relaxed font-light font-sans">
-                            {plainTextContent}
-                          </p>
-                        )}
+                            {/* Content Snippet */}
+                            {plainTextContent && (
+                              <p className="text-sm text-gray-400 line-clamp-3 leading-relaxed font-light font-sans">
+                                {plainTextContent}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Bottom Link */}
+                          <div className="relative z-10 flex items-center justify-between text-xs font-bold text-gray-400 group-hover:text-white transition-colors self-end w-full pt-4 border-t border-white/5 mt-4">
+                            <span>자세히 보기</span>
+                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/5 group-hover:border-white/20 group-hover:bg-white/10 transition-all duration-300">
+                              <ArrowRight className="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" />
+                            </div>
+                          </div>
+                        </Link>
                       </div>
+                    );
+                  })}
+                </div>
+              </div>
 
-                      {/* Bottom Link */}
-                      <div className="relative z-10 flex items-center justify-between text-xs font-bold text-gray-400 group-hover:text-white transition-colors self-end w-full pt-4 border-t border-white/5 mt-4">
-                        <span>자세히 보기</span>
-                        <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/5 group-hover:border-white/20 group-hover:bg-white/10 transition-all duration-300">
-                          <ArrowRight className="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" />
-                        </div>
-                      </div>
-                    </Link>
-                  </div>
-                );
-              })}
+              {/* View All Bar */}
+              <div className="mt-8 flex justify-center">
+                <Link
+                  to="/news"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-white/10 bg-white/5 text-white font-medium text-sm hover:bg-white/10 hover:border-white/20 transition-all duration-300 group"
+                >
+                  모든 소식 확인하기
+                  <ArrowUpRight className="w-4 h-4 text-gray-400 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                </Link>
+              </div>
             </div>
-
-            {/* View All Bar */}
-            <div className="mt-12 flex justify-center">
-              <Link
-                to="/news"
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-white/10 bg-white/5 text-white font-medium text-sm hover:bg-white/10 hover:border-white/20 transition-all duration-300 group"
-              >
-                모든 소식 확인하기
-                <ArrowUpRight className="w-4 h-4 text-gray-400 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
+          </section>
+        );
+      })()}
     </div>
   );
 };
