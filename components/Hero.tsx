@@ -27,6 +27,7 @@ const Hero: React.FC = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   // Filter only published articles
   const publishedPosts = posts
@@ -63,13 +64,40 @@ const Hero: React.FC = () => {
   // Handle manual navigation scroll
   const scrollTeaser = (direction: "left" | "right") => {
     if (scrollContainerRef.current) {
-      const scrollAmount = 400; // scroll by roughly one card width
+      const scrollAmount = 404; // scroll by one card width (380px card + 24px gap)
       scrollContainerRef.current.scrollBy({
         left: direction === "left" ? -scrollAmount : scrollAmount,
         behavior: "smooth",
       });
     }
   };
+
+  // Autoplay automatic horizontal scrolling when multiple posts exist and user is not hovering
+  useEffect(() => {
+    if (publishedPosts.length <= 1 || isHovered) return;
+
+    const intervalId = setInterval(() => {
+      if (scrollContainerRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+        
+        // If reached close to the end, return smoothly to start
+        if (scrollLeft + clientWidth >= scrollWidth - 25) {
+          scrollContainerRef.current.scrollTo({
+            left: 0,
+            behavior: "smooth",
+          });
+        } else {
+          // Scroll by one card position smoothly (380px card + 24px gap = 404px)
+          scrollContainerRef.current.scrollBy({
+            left: 404,
+            behavior: "smooth",
+          });
+        }
+      }
+    }, 4000); // Transitions to next card every 4 seconds
+
+    return () => clearInterval(intervalId);
+  }, [publishedPosts, isHovered]);
 
   useEffect(() => {
     let ticking = false;
@@ -248,6 +276,8 @@ const Hero: React.FC = () => {
         <section
           id="dmc-room-teaser"
           className="relative py-24 z-10 w-full min-h-[600px] flex items-center border-b border-gray-950/40"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
         >
           {/* Subtle overlay shading specifically to enrich readability of news items on top of background texture */}
           <div className="absolute inset-0 bg-black/25 backdrop-blur-[0.5px] pointer-events-none" />
