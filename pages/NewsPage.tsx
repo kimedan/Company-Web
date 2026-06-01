@@ -7,7 +7,6 @@ import {
   Calendar,
   User,
   ArrowLeft,
-  Eye,
   FileText,
   ChevronRight,
   ChevronLeft,
@@ -26,18 +25,6 @@ const NewsPage: React.FC = () => {
 
   // Find the selected post if ID is provided
   const currentPost = id ? posts.find((p) => p.id === id) : null;
-
-  // Track page view count in-memory or on mount
-  useEffect(() => {
-    if (currentPost && id) {
-      const timer = setTimeout(() => {
-        if (updatePost) {
-          updatePost(id, { views: (currentPost.views || 0) + 1 });
-        }
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [id, currentPost]);
 
   // Scroll to top on page load or post navigation
   useEffect(() => {
@@ -138,15 +125,10 @@ const NewsPage: React.FC = () => {
 
               {/* Post Details */}
               <div className="p-6 md:p-8 flex flex-col flex-grow">
-                <div className="flex items-center gap-3 text-xs font-mono text-gray-500 mb-4">
+                <div className="flex items-center gap-3 text-xs font-mono text-gray-400 mb-4">
                   <span className="flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5 text-gray-600" />
                     {formatDate(post.date)}
-                  </span>
-                  <span className="w-1 h-1 bg-gray-700 rounded-full" />
-                  <span className="flex items-center gap-1.5">
-                    <Eye className="w-3.5 h-3.5 text-gray-600" />
-                    {post.views || 0}
                   </span>
                 </div>
 
@@ -262,10 +244,6 @@ const NewsPage: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <User className="w-4 h-4 text-gray-600" />
               <span>{post.author || "관리자"}</span>
-            </div>
-            <div className="flex items-center gap-1.5 font-mono ml-auto text-gray-500">
-              <Eye className="w-4 h-4 text-gray-600" />
-              <span>조회수 {post.views || 0}</span>
             </div>
           </div>
         </div>

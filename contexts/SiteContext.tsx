@@ -251,8 +251,8 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const saveData = async (docName: string, data: any, forceInit: boolean = false) => {
     const status = dataStatusRef.current[docName];
     
-    // 명시적 초기화(forceInit)가 아니면 success 상태에서만 저장 허용
-    if (!forceInit && status !== 'success') {
+    // 명시적 초기화(forceInit)가 아니면 success 또는 not_found 상태에서만 저장 허용
+    if (!forceInit && status !== 'success' && status !== 'not_found') {
       alert("Firestore 동기화 완료 전에는 저장할 수 없습니다.");
       return;
     }

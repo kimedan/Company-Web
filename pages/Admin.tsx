@@ -1282,14 +1282,13 @@ export const AdminPosts: React.FC = () => {
                 <th className="px-6 py-4 font-medium">작성자</th>
                 <th className="px-6 py-4 font-medium">작성일</th>
                 <th className="px-6 py-4 font-medium">상태</th>
-                <th className="px-6 py-4 font-medium">조회수</th>
                 <th className="px-6 py-4 font-medium text-right">관리</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredPosts.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500 text-sm">
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500 text-sm">
                     검색 결과 또는 등록된 게시글이 없습니다.
                   </td>
                 </tr>
@@ -1333,9 +1332,6 @@ export const AdminPosts: React.FC = () => {
                       >
                         {post.status === "Published" ? "게시됨" : "임시저장"}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 font-mono">
-                      {(post.views || 0).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-1">
