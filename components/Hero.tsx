@@ -175,15 +175,15 @@ const Hero: React.FC = () => {
         Bottom Gradient Blend - "Seam Eraser"
         Technique: Tall gradient with variable opacity + Backdrop Blur
         This creates a smooth transition from the dark video/image to the white content section.
-        Updated: Height reduced to h-48 to avoid covering the CTA button.
+        Updated: Height reduced to h-28 and opacity set to via-white/15 to blend softly with the main background.
       */}
-      <div className="absolute bottom-0 left-0 w-full h-48 z-10 pointer-events-none">
+      <div className="absolute bottom-0 left-0 w-full h-28 z-10 pointer-events-none">
         {/* Layer 1: Soft fade to white (matches next section color) */}
-        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/15 to-transparent" />
 
         {/* Layer 2: Subtle blur at the very bottom to dissolve image grain */}
         <div
-          className="absolute bottom-0 left-0 w-full h-24 backdrop-blur-[2px] mask-image-gradient-to-t"
+          className="absolute bottom-0 left-0 w-full h-14 backdrop-blur-[2px] mask-image-gradient-to-t"
           style={{ maskImage: "linear-gradient(to top, black, transparent)" }}
         />
       </div>
