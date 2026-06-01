@@ -99,7 +99,8 @@ const DEFAULT_CONTENT: ContentMap = {
   'intro_main_title_2': 'In Aluminum Extrusion',
   'intro_desc': '대우경금속은 고객 맞춤형 금형설계, 정밀압출, 도장/아노다이징(피막), 정밀절단, 기계가공 및 적기적소의 납기까지 알루미늄 압출을 중심으로 올인원 솔루션을 제공합니다.\n최첨단 설비와 축적된 기술력을 바탕으로 다양한 산업 분야의 핵심 소재를 공급하고 있습니다.',
   'daegu_biz_reg_pdf': '',
-  'changnyeong_biz_reg_pdf': ''
+  'changnyeong_biz_reg_pdf': '',
+  'news_desc': '대우의 변화와 성장을 투명하게,'
 };
 
 const SiteContext = createContext<SiteContextType | undefined>(undefined);

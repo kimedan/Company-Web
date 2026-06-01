@@ -18,7 +18,7 @@ import {
 const NewsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { posts, updatePost } = useSite();
+  const { posts, updatePost, content } = useSite();
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -353,7 +353,7 @@ const NewsPage: React.FC = () => {
               DMC Room
             </h1>
             <p className="text-base md:text-xl text-gray-400 max-w-3xl leading-relaxed font-light break-keep">
-              대우경금속의 새로운 소식과 언론 보도자료를 투명하고 신속하게 전해드립니다.
+              {content['news_desc'] || '대우의 변화와 성장을 투명하게,'}
             </p>
           </div>
         )}

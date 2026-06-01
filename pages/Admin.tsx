@@ -820,6 +820,29 @@ export const AdminContent: React.FC = () => {
                 />
               </div>
             </div>
+
+            {/* DMC Room Edit */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+              <div className="flex items-center gap-2 mb-2 border-b border-gray-100 pb-3">
+                <div className="p-2 bg-emerald-50 rounded text-emerald-600">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <h3 className="font-bold">DMC Room - 뉴스룸</h3>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase">
+                  DMC Room 서브타이틀
+                </label>
+                <textarea
+                  rows={5}
+                  value={content["news_desc"] || ""}
+                  onChange={(e) => updateContent("news_desc", e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg p-2 mt-1 resize-none"
+                  placeholder="대우의 변화와 성장을 투명하게,"
+                />
+              </div>
+            </div>
           </div>
         )}
 
