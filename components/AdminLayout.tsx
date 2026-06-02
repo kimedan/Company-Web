@@ -30,22 +30,22 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const menuItems = [
     {
       label: "대시보드",
-      path: "/admin",
+      path: "/admin-dmc",
       icon: <LayoutDashboard className="w-5 h-5" />,
     },
     {
       label: "페이지/콘텐츠 관리",
-      path: "/admin/content",
+      path: "/admin-dmc/content",
       icon: <Layers className="w-5 h-5" />,
     },
     {
       label: "게시글 관리",
-      path: "/admin/posts",
+      path: "/admin-dmc/posts",
       icon: <FileText className="w-5 h-5" />,
     },
     {
       label: "사이트 설정",
-      path: "/admin/settings",
+      path: "/admin-dmc/settings",
       icon: <Settings className="w-5 h-5" />,
     },
   ];

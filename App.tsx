@@ -367,7 +367,7 @@ const App: React.FC = () => {
 
             {/* Admin Routes (Protected + lazy) */}
             <Route
-              path="/admin"
+              path="/admin-dmc"
               element={
                 <ProtectedRoute>
                   <React.Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><span className="text-gray-400 text-sm">로딩 중...</span></div>}>
@@ -377,7 +377,7 @@ const App: React.FC = () => {
               }
             />
             <Route
-              path="/admin/content"
+              path="/admin-dmc/content"
               element={
                 <ProtectedRoute>
                   <React.Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><span className="text-gray-400 text-sm">로딩 중...</span></div>}>
@@ -387,7 +387,7 @@ const App: React.FC = () => {
               }
             />
             <Route
-              path="/admin/posts"
+              path="/admin-dmc/posts"
               element={
                 <ProtectedRoute>
                   <React.Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><span className="text-gray-400 text-sm">로딩 중...</span></div>}>
@@ -397,7 +397,7 @@ const App: React.FC = () => {
               }
             />
             <Route
-              path="/admin/settings"
+              path="/admin-dmc/settings"
               element={
                 <ProtectedRoute>
                   <React.Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><span className="text-gray-400 text-sm">로딩 중...</span></div>}>

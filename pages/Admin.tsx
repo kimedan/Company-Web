@@ -116,13 +116,13 @@ export const AdminDashboard: React.FC = () => {
             <h3 className="text-lg font-bold mb-4">빠른 바로가기</h3>
             <div className="flex gap-4">
               <a
-                href="#/admin/content"
+                href="#/admin-dmc/content"
                 className="flex-1 bg-blue-50 p-4 rounded-xl text-brand-blue font-bold hover:bg-blue-100 transition-colors text-center"
               >
                 페이지 문구 수정
               </a>
               <a
-                href="#/admin/posts"
+                href="#/admin-dmc/posts"
                 className="flex-1 bg-gray-50 p-4 rounded-xl text-gray-700 font-bold hover:bg-gray-100 transition-colors text-center"
               >
                 새 공지사항 작성

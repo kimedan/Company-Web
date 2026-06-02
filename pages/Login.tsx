@@ -15,7 +15,7 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || "/admin";
+  const from = location.state?.from?.pathname || "/admin-dmc";
 
   // [중요] 로그인 페이지 접속 시 기존 세션 강제 종료 (혹시 모를 캐시 문제 방지)
   useEffect(() => {
