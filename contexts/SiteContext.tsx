@@ -1,8 +1,33 @@
-
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { Post, SiteConfig, Language, Certification, ContentMap, Product, ProcessStep, QualityEquipment } from '../types';
 import { TRANSLATIONS } from '../translations';
-import { db, doc, onSnapshot, setDoc, getDoc, initAppCheck } from '../utils/firebase';
+import { db, doc, setDoc, getDoc, initAppCheck } from '../utils/firebase';
+
+// 일회성 읽기 헬퍼 (getDoc 기반 - 모든 컬렉션 일회성 읽기로 통일)
+const fetchOnce = async (docName: string, setter: any, defaultData: any, dataStatusRef: React.MutableRefObject<Record<string, any>>, applyOverrides?: (data: any) => any) => {
+  dataStatusRef.current[docName] = 'loading';
+  try {
+    const snapshot = await getDoc(doc(db, 'site_data', docName));
+    if (snapshot.exists()) {
+      let data = snapshot.data().data;
+      if (!data || (Array.isArray(data) && data.length === 0)) {
+        dataStatusRef.current[docName] = 'not_found';
+        setter(defaultData);
+      } else {
+        dataStatusRef.current[docName] = 'success';
+        if (applyOverrides) data = applyOverrides(data);
+        setter(data);
+      }
+    } else {
+      dataStatusRef.current[docName] = 'not_found';
+      setter(defaultData);
+    }
+  } catch (error: any) {
+    console.warn(`Firestore read blocked for ${docName}:`, error.message);
+    dataStatusRef.current[docName] = 'error';
+    setter(defaultData);
+  }
+};
 
 interface SiteContextType {
   config: SiteConfig;
@@ -133,98 +158,58 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // --- Firestore Realtime Sync ---
   useEffect(() => {
-    const fetchWithSnapshot = (docName: string, setter: any, defaultData: any) => {
-      dataStatusRef.current[docName] = 'loading';
-      
-      const unsubscribe = onSnapshot(doc(db, COLLECTION_NAME, docName), (snapshot) => {
-        if (snapshot.exists()) {
-          // If document exists in DB, use it
-          let data = snapshot.data().data;
-          
-          if (!data || (Array.isArray(data) && data.length === 0)) {
-            // Document exists but empty? We use fallback UI data
-            // but DO NOT mark as success so that it won't overwrite empty array with defaults later unless intended
-            data = defaultData;
-            dataStatusRef.current[docName] = 'not_found';
-          } else {
-            dataStatusRef.current[docName] = 'success';
-          }
-          
-          // Apply user requested overrides automatically if they are still using the old values
-          if (docName === 'content') {
-             if (data['home_hero_badge'] === 'Total Aluminum Solutions') data['home_hero_badge'] = 'Aluminum Extrusion Total Solution';
-             if (data['home_hero_title_highlight'] === 'Aluminum Technology') data['home_hero_title_highlight'] = 'Aluminum Extrusion';
-             if (
-                data['home_hero_desc'] === '차별화된 기술력과 서비스로 알루미늄 산업을 선도합니다. 고객 맞춤형 설계부터 완벽한 납기까지, 우리는 기준을 만듭니다.' ||
-                data['home_hero_desc'] === '대우경금속은 차별화된 기술력과 서비스로 알루미늄 압출 산업을 선도합니다. 고객 맞춤형 설계부터 완벽한 납기까지, 우리는 기준을 만듭니다.'
-             ) {
-                 data['home_hero_desc'] = '대우경금속은 차별화된 기술력과 서비스로 알루미늄 압출 산업을 선도합니다.\n고객 맞춤형 설계부터 완벽한 납기까지, 우리는 기준을 만듭니다.';
-             }
-             if (data['intro_main_title_1'] === 'Global Leader in') data['intro_main_title_1'] = 'Global Leader';
-             if (data['intro_main_title_2'] === 'Aluminum Extrusion') data['intro_main_title_2'] = 'In Aluminum Extrusion';
-             if (data['intro_desc'] === '대우경금속은 고객 맞춤형 설계, 생산, 피막, 기계가공 및 적기적소의 납기까지 Total 서비스를 제공합니다. 최첨단 설비와 축적된 기술력을 바탕으로 다양한 산업 분야의 핵심 소재를 공급하고 있습니다.' || data['intro_desc'] === '대우경금속은 고객 맞춤형 금형설계, 정밀압출, 도장/아노다이징(피막), 정밀절단, 기계가공 및 적기적소의 납기까지\n알루미늄 압출을 중심으로 올인원 솔루션을 제공합니다.\n최첨단 설비와 축적된 기술력을 바탕으로 다양한 산업 분야의 핵심 소재를 공급하고 있습니다.') {
-                 data['intro_desc'] = '대우경금속은 고객 맞춤형 금형설계, 정밀압출, 도장/아노다이징(피막), 정밀절단, 기계가공 및 적기적소의 납기까지 알루미늄 압출을 중심으로 올인원 솔루션을 제공합니다.\n최첨단 설비와 축적된 기술력을 바탕으로 다양한 산업 분야의 핵심 소재를 공급하고 있습니다.';
-             }
-          }
-
-          if (docName === 'products') {
-            data = data.map((p: any) => {
-              if (!p.slug) {
-                if (p.id === 'p1') p.slug = 'auto-parts';
-                else if (p.id === 'p2') p.slug = 'industrial-material';
-                else if (p.id === 'p3') p.slug = 'non-ferrous-material';
-                else if (p.id === 'p4') p.slug = 'electronics-material';
-                else if (p.id === 'p5') p.slug = 'construction-material';
-                else if (p.id === 'p7') p.slug = 'general-material';
-                else p.slug = p.id;
-              }
-              return p;
-            });
-          }
-          
-          setter(data);
-        } else {
-          // If not exists (first run), we use hardcoded defaults for UI fallback.
-          dataStatusRef.current[docName] = 'not_found';
-          setter(defaultData);
-        }
-      }, (error) => {
-        console.warn(`Firestore read blocked for ${docName}:`, error.message);
-        dataStatusRef.current[docName] = 'error';
-        // Fallback to default if there's an error
-        setter(defaultData); 
-      });
-
-      return unsubscribe;
-    };
-
     let active = true;
-    const activeUnsubs: (() => void)[] = [];
-
     const initializeData = async () => {
       await initAppCheck(); // IMPORTANT: Wait for App Check before Firestore connections
       if (!active) return;
-      
-      const configUnsub = fetchWithSnapshot('config', setConfig, DEFAULT_CONFIG);
-      const postsUnsub = fetchWithSnapshot('posts', setPosts, DEFAULT_POSTS);
-      const productsUnsub = fetchWithSnapshot('products', setProducts, DEFAULT_PRODUCTS);
-      const certsUnsub = fetchWithSnapshot('certifications', setCertifications, DEFAULT_CERTIFICATIONS);
-      const processUnsub = fetchWithSnapshot('processSteps', setProcessSteps, DEFAULT_PROCESS_STEPS);
-      const equipUnsub = fetchWithSnapshot('equipments', setEquipments, DEFAULT_EQUIPMENTS);
-      const contentUnsub = fetchWithSnapshot('content', setContent, DEFAULT_CONTENT);
 
-      if (!active) {
-        configUnsub();
-        postsUnsub();
-        productsUnsub();
-        certsUnsub();
-        processUnsub();
-        equipUnsub();
-        contentUnsub();
-        return;
-      }
+      // ── getDoc (일회성 읽기) ── 실시간 불필요한 6개
+      await Promise.all([
+        fetchOnce('config', setConfig, DEFAULT_CONFIG, dataStatusRef),
+        fetchOnce('products', setProducts, DEFAULT_PRODUCTS, dataStatusRef, (data) => {
+          return data.map((p: any) => {
+            if (!p.slug) {
+              if (p.id === 'p1') p.slug = 'auto-parts';
+              else if (p.id === 'p2') p.slug = 'industrial-material';
+              else if (p.id === 'p3') p.slug = 'non-ferrous-material';
+              else if (p.id === 'p4') p.slug = 'electronics-material';
+              else if (p.id === 'p5') p.slug = 'construction-material';
+              else if (p.id === 'p7') p.slug = 'general-material';
+              else p.slug = p.id;
+            }
+            return p;
+          });
+        }),
+        fetchOnce('certifications', setCertifications, DEFAULT_CERTIFICATIONS, dataStatusRef),
+        fetchOnce('processSteps', setProcessSteps, DEFAULT_PROCESS_STEPS, dataStatusRef),
+        fetchOnce('equipments', setEquipments, DEFAULT_EQUIPMENTS, dataStatusRef),
+        fetchOnce('content', setContent, DEFAULT_CONTENT, dataStatusRef, (data) => {
+          // 기존 레거시 값 자동 마이그레이션
+          if (data['home_hero_badge'] === 'Total Aluminum Solutions') data['home_hero_badge'] = 'Aluminum Extrusion Total Solution';
+          if (data['home_hero_title_highlight'] === 'Aluminum Technology') data['home_hero_title_highlight'] = 'Aluminum Extrusion';
+          if (
+            data['home_hero_desc'] === '차별화된 기술력과 서비스로 알루미늄 산업을 선도합니다. 고객 맞춤형 설계부터 완벽한 납기까지, 우리는 기준을 만듭니다.' ||
+            data['home_hero_desc'] === '대우경금속은 차별화된 기술력과 서비스로 알루미늄 압출 산업을 선도합니다. 고객 맞춤형 설계부터 완벽한 납기까지, 우리는 기준을 만듭니다.'
+          ) {
+            data['home_hero_desc'] = '대우경금속은 차별화된 기술력과 서비스로 알루미늄 압출 산업을 선도합니다.\n고객 맞춤형 설계부터 완벽한 납기까지, 우리는 기준을 만듭니다.';
+          }
+          if (data['intro_main_title_1'] === 'Global Leader in') data['intro_main_title_1'] = 'Global Leader';
+          if (data['intro_main_title_2'] === 'Aluminum Extrusion') data['intro_main_title_2'] = 'In Aluminum Extrusion';
+          if (
+            data['intro_desc'] === '대우경금속은 고객 맞춤형 설계, 생산, 피막, 기계가공 및 적기적소의 납기까지 Total 서비스를 제공합니다. 최첨단 설비와 축적된 기술력을 바탕으로 다양한 산업 분야의 핵심 소재를 공급하고 있습니다.' ||
+            data['intro_desc'] === '대우경금속은 고객 맞춤형 금형설계, 정밀압출, 도장/아노다이징(피막), 정밀절단, 기계가공 및 적기적소의 납기까지\n알루미늄 압출을 중심으로 올인원 솔루션을 제공합니다.\n최첨단 설비와 축적된 기술력을 바탕으로 다양한 산업 분야의 핵심 소재를 공급하고 있습니다.'
+          ) {
+            data['intro_desc'] = '대우경금속은 고객 맞춤형 금형설계, 정밀압출, 도장/아노다이징(피막), 정밀절단, 기계가공 및 적기적소의 납기까지 알루미늄 압출을 중심으로 올인원 솔루션을 제공합니다.\n최첨단 설비와 축적된 기술력을 바탕으로 다양한 산업 분야의 핵심 소재를 공급하고 있습니다.';
+          }
+          return data;
+        }),
+      ]);
 
-      activeUnsubs.push(configUnsub, postsUnsub, productsUnsub, certsUnsub, processUnsub, equipUnsub, contentUnsub);
+      if (!active) return;
+
+      // ── getDoc (일회성 읽기) ── posts도 실시간 불필요 (회사 홈페이지 특성상 페이지 재진입 시 갱신으로 충분)
+      await fetchOnce('posts', setPosts, DEFAULT_POSTS, dataStatusRef);
+
       setIsSyncing(false);
     };
 
@@ -232,7 +217,6 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       active = false;
-      activeUnsubs.forEach(unsub => unsub());
     };
   }, []);
 

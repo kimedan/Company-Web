@@ -20,13 +20,12 @@ import { SiteProvider, useSite } from "./contexts/SiteContext";
 import { Product } from "./types";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import {
-  AdminDashboard,
-  AdminPosts,
-  AdminSettings,
-  AdminContent,
-} from "./pages/Admin";
-import Login from "./pages/Login";
+// Admin 컴포넌트 lazy import - 방문자는 Admin 코드를 다운받지 않음
+const AdminDashboard = React.lazy(() => import("./pages/Admin").then(m => ({ default: m.AdminDashboard })));
+const AdminContent   = React.lazy(() => import("./pages/Admin").then(m => ({ default: m.AdminContent })));
+const AdminPosts     = React.lazy(() => import("./pages/Admin").then(m => ({ default: m.AdminPosts })));
+const AdminSettings  = React.lazy(() => import("./pages/Admin").then(m => ({ default: m.AdminSettings })));
+const Login = React.lazy(() => import("./pages/Login"));
 import ProcessPage from "./pages/Process";
 import QualityPage from "./pages/Quality";
 import RndPage from "./pages/RndPage";
@@ -356,15 +355,24 @@ const App: React.FC = () => {
         <Router>
           <ScrollToTop />
           <Routes>
-            {/* Login Route */}
-            <Route path="/login" element={<Login />} />
+            {/* Login / Admin Routes - lazy loaded, 방문자는 다운받지 않음 */}
+            <Route
+              path="/login"
+              element={
+                <React.Suspense fallback={<div className="min-h-screen bg-[#07090e]" />}>
+                  <Login />
+                </React.Suspense>
+              }
+            />
 
-            {/* Admin Routes (Protected) */}
+            {/* Admin Routes (Protected + lazy) */}
             <Route
               path="/admin"
               element={
                 <ProtectedRoute>
-                  <AdminDashboard />
+                  <React.Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><span className="text-gray-400 text-sm">로딩 중...</span></div>}>
+                    <AdminDashboard />
+                  </React.Suspense>
                 </ProtectedRoute>
               }
             />
@@ -372,7 +380,9 @@ const App: React.FC = () => {
               path="/admin/content"
               element={
                 <ProtectedRoute>
-                  <AdminContent />
+                  <React.Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><span className="text-gray-400 text-sm">로딩 중...</span></div>}>
+                    <AdminContent />
+                  </React.Suspense>
                 </ProtectedRoute>
               }
             />
@@ -380,7 +390,9 @@ const App: React.FC = () => {
               path="/admin/posts"
               element={
                 <ProtectedRoute>
-                  <AdminPosts />
+                  <React.Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><span className="text-gray-400 text-sm">로딩 중...</span></div>}>
+                    <AdminPosts />
+                  </React.Suspense>
                 </ProtectedRoute>
               }
             />
@@ -388,7 +400,9 @@ const App: React.FC = () => {
               path="/admin/settings"
               element={
                 <ProtectedRoute>
-                  <AdminSettings />
+                  <React.Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><span className="text-gray-400 text-sm">로딩 중...</span></div>}>
+                    <AdminSettings />
+                  </React.Suspense>
                 </ProtectedRoute>
               }
             />

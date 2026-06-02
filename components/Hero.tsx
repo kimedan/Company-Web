@@ -14,7 +14,8 @@ import { useSite } from "../contexts/SiteContext";
 import heroBg from "../assets/IMG_4372.JPG";
 
 const Hero: React.FC = () => {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  // mousePos를 ref로 관리 - 마우스 이동 시 리렌더링 방지
+  const mousePosRef = useRef({ x: 0, y: 0 });
   const { t, content, language, posts } = useSite();
 
   // Use Refs for direct DOM manipulation to avoid re-renders on scroll (performance optimization)
@@ -27,6 +28,7 @@ const Hero: React.FC = () => {
   const isTransitioning = useRef(false);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const scrollPosRef = useRef<number>(0);
+  const isHeroVisible = useRef<boolean>(true); // Hero 뷰포트 가시성 추적
 
   // Filter only published articles
   const publishedPosts = posts
@@ -269,13 +271,15 @@ const Hero: React.FC = () => {
     let ticking = false;
 
     const handleScroll = () => {
+      // Hero가 뷰포트에 없으면 scroll 연산 스킵
+      if (!isHeroVisible.current) return;
+
       if (!ticking) {
         window.requestAnimationFrame(() => {
           const scrollY = window.scrollY;
 
-          // Apply parallax effect directly to DOM elements
           if (bgRef.current) {
-            bgRef.current.style.transform = `translate3d(${mousePos.x * -20}px, ${scrollY * 0.12 + mousePos.y * -20}px, 0) scale(1.02)`;
+            bgRef.current.style.transform = `translate3d(${mousePosRef.current.x * -20}px, ${scrollY * 0.12 + mousePosRef.current.y * -20}px, 0) scale(1.02)`;
           }
 
           if (contentRef.current) {
@@ -285,7 +289,6 @@ const Hero: React.FC = () => {
 
             contentRef.current.style.transform = `translate3d(0, ${translateY}px, 0) scale(${scale})`;
             contentRef.current.style.opacity = `${scrollOpacity * (fadeState === "in" ? 1 : 0)}`;
-
             contentRef.current.style.filter = `blur(${scrollY / 60}px)`;
           }
 
@@ -302,22 +305,38 @@ const Hero: React.FC = () => {
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth) * 2 - 1;
-      const y = (e.clientY / window.innerHeight) * 2 - 1;
-      setMousePos({ x, y });
+      // Hero가 뷰포트에 없으면 mousemove 연산 스킵
+      if (!isHeroVisible.current) return;
+
+      mousePosRef.current = {
+        x: (e.clientX / window.innerWidth) * 2 - 1,
+        y: (e.clientY / window.innerHeight) * 2 - 1,
+      };
     };
+
+    // IntersectionObserver: Hero 가시성 감지 → 리스너 연산 on/off
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isHeroVisible.current = entry.isIntersecting;
+      },
+      { threshold: 0 } // 1px이라도 보이면 visible
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("mousemove", handleMouseMove);
 
-    // Initial run to lay out the styles correctly on load
     handleScroll();
 
     return () => {
+      observer.disconnect();
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("mousemove", handleMouseMove);
     };
-  }, [mousePos, fadeState, currentSlideIndex, dynamicSlides.length]);
+  }, [fadeState, currentSlideIndex, dynamicSlides.length]);
 
   const scrollToContent = () => {
     const teaserSection = document.getElementById("dmc-room-teaser");
@@ -598,7 +617,7 @@ const Hero: React.FC = () => {
                           <div className="relative z-10 w-full">
                             <div className="flex items-center justify-between gap-4 mb-4">
                               {/* Badge */}
-                              <span className="inline-flex px-3 py-1 bg-white/5 text-white/90 border border-white/10 text-[10px] font-semibold uppercase tracking-wider rounded-full">
+                              <span className="inline-block px-3 py-1 bg-white/5 text-white/90 border border-white/10 text-[10px] font-semibold uppercase tracking-wider rounded-full">
                                 {post.category || "회사소식"}
                               </span>
                               
