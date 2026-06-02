@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { NAV_ITEMS, LEGAL_TEXTS } from "../constants";
 import { Link } from "react-router-dom";
-import { Phone, Mail, Lock } from "lucide-react";
+import { Phone, Mail } from "lucide-react";
 import { useSite } from "../contexts/SiteContext";
 import Logo from "./Logo";
 import { Language } from "../types";
@@ -156,16 +156,7 @@ const Footer: React.FC = () => {
                   {t.footer.privacy_policy}
                 </button>
               </div>
-              <div className="flex items-center gap-4">
-                <span>{t.footer.rights}</span>
-                <Link
-                  to="/admin-dmc"
-                  className="opacity-10 hover:opacity-50 transition-all duration-300"
-                  title="Admin Login"
-                >
-                  <Lock className="w-3 h-3" />
-                </Link>
-              </div>
+              <span>{t.footer.rights}</span>
             </div>
           </div>
         </div>
