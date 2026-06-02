@@ -137,7 +137,7 @@ const ProductSection: React.FC<ProductSectionProps> = ({
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
           {products.map((product, index) => {
             const content = getProductContent(product);
             return (
@@ -146,7 +146,7 @@ const ProductSection: React.FC<ProductSectionProps> = ({
                   onClick={() => setSelectedProduct(product)}
                   className="group block h-full cursor-pointer"
                 >
-                  <div className="bg-white rounded-[2rem] overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] hover:-translate-y-2 transition-all duration-500 ease-spring h-full flex flex-col border border-gray-100/50 relative z-0 hover:z-10">
+                  <div className="bg-white rounded-2xl sm:rounded-[2rem] overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] hover:-translate-y-2 transition-all duration-500 ease-spring h-full flex flex-col border border-gray-100/50 relative z-0 hover:z-10">
                     {/* Image Container */}
                     <div className="aspect-[4/3] overflow-hidden bg-gray-100 relative">
                       <img
@@ -157,30 +157,30 @@ const ProductSection: React.FC<ProductSectionProps> = ({
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500"></div>
 
-                      {/* Category Tag - Slides in on hover */}
-                      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-bold text-brand-blue uppercase tracking-wider shadow-sm translate-y-[-10px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 ease-spring">
+                      {/* Category Tag - Slides in on hover, always visible on mobile at top-left for scannability */}
+                      <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-full text-[9px] sm:text-xs font-bold text-brand-blue uppercase tracking-wider shadow-sm opacity-100 sm:translate-y-[-10px] sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 transition-all duration-500 ease-spring">
                         {content.category}
                       </div>
 
                       {/* Overlay Icon */}
-                      <div className="absolute bottom-4 right-4 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 transition-all duration-500 ease-spring">
-                        <Plus className="w-5 h-5 text-white" />
+                      <div className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 w-7 h-7 sm:w-10 sm:h-10 bg-white/25 sm:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 scale-100 sm:scale-75 sm:group-hover:scale-100 transition-all duration-500 ease-spring">
+                        <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                       </div>
                     </div>
 
                     {/* Text Content */}
-                    <div className="p-8 flex-1 flex flex-col relative">
-                      <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-brand-blue transition-colors duration-300">
+                    <div className="p-4 sm:p-8 flex-1 flex flex-col relative text-left">
+                      <h3 className="text-sm sm:text-2xl font-bold text-gray-900 mb-1.5 sm:mb-3 group-hover:text-brand-blue transition-colors duration-300 line-clamp-1 sm:line-clamp-none">
                         {content.title}
                       </h3>
-                      <p className="text-gray-500 font-medium leading-relaxed mb-6 line-clamp-3">
+                      <p className="text-[11px] sm:text-base text-gray-400 sm:text-gray-500 font-medium leading-relaxed mb-3 sm:mb-6 line-clamp-2 sm:line-clamp-3">
                         {content.description}
                       </p>
 
-                      <div className="mt-auto pt-6 border-t border-gray-100 flex items-center justify-between text-sm font-bold text-brand-blue">
+                      <div className="mt-auto pt-3 sm:pt-6 border-t border-gray-100 flex items-center justify-between text-[10px] sm:text-sm font-bold text-brand-blue">
                         <span>{t.products.detail_btn}</span>
-                        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center group-hover:bg-brand-blue group-hover:text-white transition-colors duration-300">
-                          <ArrowUpRight className="w-4 h-4 group-hover:rotate-45 transition-transform duration-500 ease-spring" />
+                        <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-blue-50/70 sm:bg-blue-50 flex items-center justify-center group-hover:bg-brand-blue group-hover:text-white transition-colors duration-300">
+                          <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:rotate-45 transition-transform duration-500 ease-spring" />
                         </div>
                       </div>
                     </div>

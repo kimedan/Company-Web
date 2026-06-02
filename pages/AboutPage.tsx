@@ -144,21 +144,21 @@ const AboutPage = () => {
             </div>
           </ScrollReveal>
 
-          {/* Factory Images */}
-          <div className="grid md:grid-cols-2 gap-8">
+          {/* Factory Images (2-column on mobile) */}
+          <div className="grid grid-cols-2 gap-3 sm:gap-8">
             <ScrollReveal delay={0.1}>
-              <div className="group relative rounded-3xl overflow-hidden shadow-xl h-[300px] md:h-[400px]">
+              <div className="group relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl h-[160px] sm:h-[300px] md:h-[400px]">
                 <img
                   src={introImg1}
                   alt="대구공장 전경"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-8">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex items-end p-3 sm:p-8 text-left">
                   <div className="text-white transform transition-transform duration-300 group-hover:-translate-y-2">
-                    <h4 className="text-2xl font-bold mb-2">
+                    <h4 className="text-xs sm:text-2xl font-bold mb-0.5 sm:mb-2">
                       {t.footer.daegu}
                     </h4>
-                    <p className="text-white/80 text-sm font-medium">
+                    <p className="text-white/80 text-[10px] sm:text-sm font-medium leading-normal break-keep">
                       {language === "KOR"
                         ? "최첨단 압출 설비 및 본사 운영\nIATF 16949 인증 사업장"
                         : language === "ENG"
@@ -170,18 +170,18 @@ const AboutPage = () => {
               </div>
             </ScrollReveal>
             <ScrollReveal delay={0.2}>
-              <div className="group relative rounded-3xl overflow-hidden shadow-xl h-[300px] md:h-[400px]">
+              <div className="group relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl h-[160px] sm:h-[300px] md:h-[400px]">
                 <img
                   src={introImg2}
                   alt="창녕공장 전경"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-8">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex items-end p-3 sm:p-8 text-left">
                   <div className="text-white transform transition-transform duration-300 group-hover:-translate-y-2">
-                    <h4 className="text-2xl font-bold mb-2">
+                    <h4 className="text-xs sm:text-2xl font-bold mb-0.5 sm:mb-2">
                       {t.footer.changnyeong}
                     </h4>
-                    <p className="text-white/80 text-sm font-medium">
+                    <p className="text-white/80 text-[10px] sm:text-sm font-medium leading-normal break-keep">
                       {language === "KOR"
                         ? "대규모 물류 센터 및 제 2 생산 거점\n스마트 팩토리 시스템 구축"
                         : language === "ENG"
@@ -488,22 +488,30 @@ const AboutPage = () => {
                 <div className="w-12 h-1 bg-gray-200 mx-auto mt-4 rounded-full"></div>
               </div>
             </ScrollReveal>
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-8">
               {coreValues.map((val, idx) => (
-                <ScrollReveal key={idx} delay={idx * 0.1}>
-                  <div className="group bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 ease-spring h-full flex flex-col items-center text-center">
+                <ScrollReveal
+                  key={idx}
+                  delay={idx * 0.1}
+                  className={idx === 2 ? "col-span-2 md:col-span-1" : "col-span-1"}
+                >
+                  <div className="group bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] sm:shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 ease-spring h-full flex flex-col items-center text-center">
                     <div
-                      className={`w-20 h-20 ${val.bg} rounded-2xl flex items-center justify-center mb-6 text-brand-blue group-hover:scale-110 transition-transform duration-300`}
+                      className={`w-12 h-12 sm:w-20 sm:h-20 ${val.bg} rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-6 text-brand-blue group-hover:scale-110 transition-transform duration-300`}
                     >
-                      {val.icon}
+                      <div className="p-1">
+                        {React.cloneElement(val.icon as React.ReactElement, {
+                          className: "w-6 h-6 sm:w-8 sm:h-8",
+                        })}
+                      </div>
                     </div>
-                    <h4 className="text-2xl font-bold text-gray-900 mb-1">
+                    <h4 className="text-sm sm:text-2xl font-bold text-gray-900 mb-0.5 sm:mb-1">
                       {val.title}
                     </h4>
-                    <p className="text-xs font-bold text-brand-blue uppercase tracking-widest mb-6 opacity-60">
+                    <p className="text-[9px] sm:text-xs font-bold text-brand-blue uppercase tracking-widest mb-3 sm:mb-6 opacity-60">
                       {val.subtitle}
                     </p>
-                    <p className="text-gray-500 leading-relaxed whitespace-pre-line break-keep">
+                    <p className="text-[11px] sm:text-base text-gray-400 sm:text-gray-500 leading-relaxed whitespace-pre-line break-keep font-semibold sm:font-medium">
                       {val.desc}
                     </p>
                   </div>
@@ -526,7 +534,7 @@ const AboutPage = () => {
         </ScrollReveal>
 
         <ScrollReveal>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
             {certifications.map((cer, idx) => {
               const certItems = (t.pages.cert as any).items;
               const translatedTitle = certItems?.[cer.id] || cer.title;
@@ -549,10 +557,10 @@ const AboutPage = () => {
                         link.click();
                         document.body.removeChild(link);
                       }}
-                      className="absolute top-4 right-4 z-20 w-8 h-8 md:w-10 md:h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-gray-500 hover:text-brand-blue hover:bg-white shadow-sm border border-gray-100 transition-all opacity-0 group-hover:opacity-100 hover:scale-110"
+                      className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20 w-7 h-7 md:w-10 md:h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center text-gray-500 hover:text-brand-blue hover:bg-white shadow-sm border border-gray-100 transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:scale-110"
                       title="Download"
                     >
-                      <Download className="w-4 h-4 md:w-5 md:h-5" />
+                      <Download className="w-3.5 h-3.5 md:w-5 md:h-5" />
                     </button>
 
                     <div className="aspect-[3/4] overflow-hidden rounded-lg bg-white relative flex items-center justify-center">
@@ -570,7 +578,7 @@ const AboutPage = () => {
                       />
                     </div>
                   </div>
-                  <p className="mt-4 text-center font-bold text-gray-800 text-sm md:text-base group-hover:text-brand-blue transition-colors">
+                  <p className="mt-3 text-center font-bold text-gray-800 text-xs md:text-base group-hover:text-brand-blue transition-colors break-keep px-1">
                     {cleanTitle}
                   </p>
                 </div>

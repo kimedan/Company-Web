@@ -149,7 +149,7 @@ const QualityPage: React.FC = () => {
           </ScrollReveal>
 
           {/* Grid Layout for Modern Look */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-8">
             {equipments.map((tool, index) => {
               const translationKey = tool.id;
               const qualityTranslations = t.quality as any;
@@ -158,7 +158,7 @@ const QualityPage: React.FC = () => {
 
               return (
                 <ScrollReveal key={tool.id} delay={index * 0.1}>
-                  <div className="bg-white rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 group hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-shadow duration-300 flex flex-col h-full">
+                  <div className="bg-white rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 group hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-shadow duration-300 flex flex-col h-full text-left">
                     <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
                       <img
                         src={tool.imageUrl}
@@ -169,19 +169,19 @@ const QualityPage: React.FC = () => {
                       />
                       {/* Mobile gradient overlay for better contrast if text overlaps, also gives a premium feel */}
                       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 block md:hidden pointer-events-none"></div>
-                      <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm border border-gray-100 text-[10px] md:text-xs font-bold tracking-wider text-gray-700 uppercase break-keep">
+                      <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white/95 backdrop-blur-sm px-2 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-sm border border-gray-100 text-[9px] sm:text-xs font-bold tracking-wider text-gray-700 uppercase break-keep">
                         {translatedItem?.spec || tool.spec}
                       </div>
                     </div>
-                    <div className="p-5 md:p-6 flex flex-col flex-grow">
-                      <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2 break-keep">
+                    <div className="p-3.5 sm:p-6 flex flex-col flex-grow">
+                      <h3 className="text-sm sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2 break-keep line-clamp-1">
                         {translatedItem?.name || tool.name}
                       </h3>
-                      <p className="text-sm md:text-base text-gray-500 leading-relaxed flex-grow break-keep">
+                      <p className="text-[11px] sm:text-base text-gray-400 sm:text-gray-500 leading-relaxed flex-grow break-keep line-clamp-2 sm:line-clamp-none">
                         {translatedItem?.description || tool.description}
                       </p>
-                      <div className="mt-5 md:mt-6 pt-4 border-t border-gray-100 flex items-center gap-2 text-brand-blue font-semibold text-xs md:text-sm">
-                        <CheckCircle2 className="w-4 h-4 shrink-0" />
+                      <div className="mt-3 sm:mt-6 pt-3 border-t border-gray-100 flex items-center gap-1 sm:gap-2 text-brand-blue font-semibold text-[10px] sm:text-sm">
+                        <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                         <span className="break-keep">
                           {t.quality?.calibrated || "정밀 검교정 완료"}
                         </span>

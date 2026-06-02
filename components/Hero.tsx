@@ -143,14 +143,16 @@ const Hero: React.FC = () => {
 
     const topFive = publishedPosts.slice(0, 5);
     let animationId: number;
+    let cardWidth = 0;
+    let singleSetWidth = 0;
 
     const initializeScroll = () => {
       const firstCard = container.firstElementChild as HTMLElement;
       if (!firstCard) return;
       const computedStyle = window.getComputedStyle(container);
       const gap = parseFloat(computedStyle.gap) || 24;
-      const cardWidth = firstCard.offsetWidth + gap;
-      const singleSetWidth = topFive.length * cardWidth;
+      cardWidth = firstCard.offsetWidth + gap;
+      singleSetWidth = topFive.length * cardWidth;
       
       // Initial positioning centered on Copy 2 loop for seamless left/right sliding
       container.scrollLeft = singleSetWidth;
@@ -160,28 +162,30 @@ const Hero: React.FC = () => {
     // Delay initialization slightly to ensure all child nodes have completely finished rendering
     const initTimeout = setTimeout(initializeScroll, 150);
 
-    const step = () => {
+    let lastTime = 0;
+
+    const step = (time: number) => {
+      if (!lastTime) lastTime = time;
       if (container) {
         if (!isHovered.current && !isTransitioning.current) {
-          scrollPosRef.current += 0.65; // Buttery smooth incremental flow speed (float tracking solves integer rounding bug)
+          const gap = time - lastTime;
+          lastTime = time;
 
-          const firstCard = container.firstElementChild as HTMLElement;
-          if (firstCard) {
-            const computedStyle = window.getComputedStyle(container);
-            const gap = parseFloat(computedStyle.gap) || 24;
-            const cardWidth = firstCard.offsetWidth + gap;
-            const singleSetWidth = topFive.length * cardWidth;
+          const cappedGap = Math.min(gap, 100); // Guard against multi-second inactive tab delay jumpiness
+          // At 60fps (16.67ms per frame), we want 0.65px per frame => 0.039px per ms
+          const speed = 0.039;
+          scrollPosRef.current += cappedGap * speed;
 
+          if (singleSetWidth > 0) {
             if (scrollPosRef.current >= singleSetWidth * 2) {
               scrollPosRef.current -= singleSetWidth;
             } else if (scrollPosRef.current <= 0) {
               scrollPosRef.current += singleSetWidth;
             }
-
-            container.scrollLeft = Math.round(scrollPosRef.current);
+            container.scrollLeft = scrollPosRef.current;
           }
         } else {
-          // Keep the float accumulator in perfect sync with mouse dragging or snapping
+          lastTime = time;
           scrollPosRef.current = container.scrollLeft;
         }
       }

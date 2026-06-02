@@ -68,24 +68,32 @@ const RndPage = () => {
           </div>
         </ScrollReveal>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-8">
           {t.rnd.fields.map((field: any, idx: number) => (
-            <ScrollReveal key={idx} delay={idx * 0.1}>
-              <div className="bg-white rounded-2xl p-8 h-full shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] border border-gray-100 transition-all duration-300 hover:-translate-y-1">
-                <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-8">
-                  {icons[idx]}
+            <ScrollReveal
+              key={idx}
+              delay={idx * 0.1}
+              className={idx === 2 ? "col-span-2 md:col-span-1" : "col-span-1"}
+            >
+              <div className="bg-white rounded-2xl p-4 sm:p-8 h-full shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] border border-gray-100 transition-all duration-300 hover:-translate-y-1 text-left">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-50 rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-8 text-brand-blue">
+                  <div className="p-1">
+                    {React.cloneElement(icons[idx] as React.ReactElement, {
+                      className: "w-6 h-6 sm:w-10 sm:h-10",
+                    })}
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-6">
+                <h3 className="text-sm sm:text-xl font-bold text-gray-900 mb-3 sm:mb-6 line-clamp-1">
                   {field.title}
                 </h3>
-                <ul className="space-y-4">
+                <ul className="space-y-2 sm:space-y-4">
                   {field.items.map((item: string, iIdx: number) => (
                     <li
                       key={iIdx}
-                      className="flex items-start gap-3 text-gray-600"
+                      className="flex items-start gap-1.5 sm:gap-3 text-gray-600"
                     >
-                      <CheckCircle2 className="w-5 h-5 text-brand-blue flex-shrink-0 mt-0.5" />
-                      <span className="leading-relaxed break-keep font-medium text-[15px]">
+                      <CheckCircle2 className="w-3.5 h-3.5 sm:w-5 h-5 text-brand-blue flex-shrink-0 mt-0.5" />
+                      <span className="leading-relaxed break-keep font-semibold sm:font-medium text-[10px] sm:text-[15px]">
                         {item}
                       </span>
                     </li>

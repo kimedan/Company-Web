@@ -31,7 +31,7 @@ const StatGraph = () => {
   return (
     <div
       ref={containerRef}
-      className="flex-1 w-full md:max-w-xl h-40 md:h-56 relative flex items-end"
+      className="w-full md:max-w-xl h-24 sm:h-40 md:h-56 relative flex items-end"
     >
       <svg
         className="w-full h-full overflow-visible"
@@ -140,11 +140,11 @@ const Philosophy: React.FC = () => {
         </div>
 
         {/* Content Section: Image & Values */}
-        <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 mb-32">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 mb-32">
           {/* Left: Image Card */}
           <div className="lg:w-1/2 relative">
             <ScrollReveal mode="scale" className="sticky top-32">
-              <div className="aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl relative group transform transition-transform duration-700 hover:scale-[1.02]">
+              <div className="aspect-[16/10] sm:aspect-[4/5] rounded-2xl sm:rounded-[3rem] overflow-hidden shadow-2xl relative group transform transition-transform duration-700 hover:scale-[1.02]">
                 <img
                   src={philosophyImg}
                   alt="Factory Interior"
@@ -152,12 +152,12 @@ const Philosophy: React.FC = () => {
                 />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500"></div>
 
-                <div className="absolute bottom-8 left-8 right-8">
-                  <div className="bg-white/90 backdrop-blur-lg p-8 rounded-3xl shadow-lg border border-white/20 transform transition-transform duration-500 group-hover:-translate-y-2">
-                    <span className="text-brand-blue font-bold tracking-wide text-sm uppercase mb-2 block">
+                <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-8 sm:right-8">
+                  <div className="bg-white/90 backdrop-blur-lg p-4 sm:p-8 rounded-2xl sm:rounded-3xl shadow-lg border border-white/20 transform transition-transform duration-500 group-hover:-translate-y-2">
+                    <span className="text-brand-blue font-bold tracking-wide text-xs sm:text-sm uppercase mb-1 sm:mb-2 block">
                       Since 2013
                     </span>
-                    <p className="text-gray-900 font-bold text-2xl whitespace-pre-line">
+                    <p className="text-gray-900 font-bold text-base sm:text-2xl whitespace-pre-line leading-snug">
                       {t.philosophy.card_title}
                     </p>
                   </div>
@@ -166,19 +166,27 @@ const Philosophy: React.FC = () => {
             </ScrollReveal>
           </div>
 
-          {/* Right: Values List */}
-          <div className="lg:w-1/2 flex flex-col justify-center space-y-6">
+          {/* Right: Values List (2-column on mobile, vertical list on desktop) */}
+          <div className="lg:w-1/2 grid grid-cols-2 lg:grid-cols-1 gap-4 lg:gap-0 lg:space-y-6">
             {values.map((item, index) => (
-              <ScrollReveal key={index} delay={index * 0.15}>
-                <div className="group flex gap-8 items-start p-8 rounded-3xl transition-all duration-500 ease-spring hover:bg-gray-50 hover:shadow-lg hover:-translate-y-1 cursor-default border border-transparent hover:border-gray-100">
-                  <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-[#071D49]/5 flex items-center justify-center shadow-sm text-brand-blue transform transition-all duration-500 ease-spring group-hover:scale-110 group-hover:bg-brand-blue group-hover:text-white">
-                    {item.icon}
+              <ScrollReveal
+                key={index}
+                delay={index * 0.1}
+                className={index === 2 ? "col-span-2 lg:col-span-1" : "col-span-1"}
+              >
+                <div className="group flex flex-col sm:flex-row gap-3 sm:gap-8 items-start p-4 sm:p-8 rounded-2xl sm:rounded-3xl transition-all duration-500 ease-spring bg-white sm:bg-transparent border border-gray-100 sm:border-transparent hover:bg-gray-50 hover:shadow-lg hover:-translate-y-1 cursor-default hover:border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] sm:shadow-none h-full text-left">
+                  <div className="flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-[#071D49]/5 flex items-center justify-center shadow-sm text-brand-blue transform transition-all duration-500 ease-spring group-hover:scale-110 group-hover:bg-brand-blue group-hover:text-white">
+                    <div className="p-1">
+                      {React.cloneElement(item.icon as React.ReactElement, {
+                        className: "w-5 h-5 sm:w-7 sm:h-7",
+                      })}
+                    </div>
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-brand-blue transition-colors">
+                    <h3 className="text-sm sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-3 group-hover:text-brand-blue transition-colors line-clamp-1">
                       {item.title}
                     </h3>
-                    <p className="text-base text-gray-500 leading-relaxed font-medium group-hover:text-gray-600 transition-colors break-keep whitespace-pre-line">
+                    <p className="text-[11px] sm:text-base text-gray-400 sm:text-gray-500 leading-relaxed font-semibold sm:font-medium group-hover:text-gray-600 transition-colors break-keep whitespace-pre-line line-clamp-3 sm:line-clamp-none">
                       {item.desc}
                     </p>
                   </div>
@@ -193,28 +201,28 @@ const Philosophy: React.FC = () => {
             Minimalist layout floating directly on the page background 
         */}
         <ScrollReveal width="full" delay={0.2}>
-          <div className="relative pt-16 border-t border-gray-100">
-            <div className="flex flex-col md:flex-row items-center md:items-end justify-between gap-12 md:gap-24">
+          <div className="relative pt-12 sm:pt-16 border-t border-gray-100">
+            <div className="grid grid-cols-2 lg:flex lg:flex-row lg:items-end lg:justify-between items-center gap-4 sm:gap-12 md:gap-24">
               {/* Text Content - Typography Size Reduced & Balanced */}
-              <div className="relative z-10 text-center md:text-left">
-                <div className="flex items-center justify-center md:justify-start gap-3 mb-4">
+              <div className="relative z-10 text-left">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4">
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
-                  <span className="text-sm font-bold uppercase tracking-[0.2em] text-slate-500">
+                  <span className="text-[10px] sm:text-sm font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-slate-500">
                     {t.philosophy.stat_label}
                   </span>
                 </div>
 
-                <div className="flex items-baseline justify-center md:justify-start gap-1 mb-6">
+                <div className="flex items-baseline gap-0.5 sm:gap-1 mb-3 sm:mb-6">
                   {/* Reduced size from 10rem to 7xl/8xl for better proportion */}
-                  <span className="text-5xl sm:text-6xl md:text-8xl font-bold tracking-tighter text-[#071D49] leading-none">
+                  <span className="text-3xl sm:text-6xl md:text-8xl font-bold tracking-tighter text-[#071D49] leading-none">
                     15,000
                   </span>
-                  <span className="text-3xl sm:text-4xl md:text-5xl font-light text-slate-400 mb-2 md:mb-3">
+                  <span className="text-xl sm:text-4xl md:text-5xl font-light text-slate-400 mb-1 sm:mb-2 ml-0.5">
                     +
                   </span>
                 </div>
 
-                <p className="text-base sm:text-lg md:text-xl text-gray-500 leading-relaxed font-medium max-w-lg break-keep">
+                <p className="text-[11px] sm:text-lg md:text-xl text-gray-500 leading-relaxed font-semibold sm:font-medium max-w-sm sm:max-w-lg break-keep">
                   {t.philosophy.stat_desc?.split("\n").map((line, i) => (
                     <React.Fragment key={i}>
                       {line}
@@ -226,7 +234,9 @@ const Philosophy: React.FC = () => {
               </div>
 
               {/* Animated Graph Component - Floating seamlessly */}
-              <StatGraph />
+              <div className="w-full flex items-end justify-end">
+                <StatGraph />
+              </div>
             </div>
           </div>
         </ScrollReveal>
