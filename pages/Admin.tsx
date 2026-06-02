@@ -1141,6 +1141,9 @@ export const AdminPosts: React.FC = () => {
     content: "",
     imageUrl: "",
     additionalImages: [] as string[],
+    showOnHero: false,
+    heroDescription: "",
+    heroOrder: 0,
   });
 
   const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
@@ -1201,6 +1204,9 @@ export const AdminPosts: React.FC = () => {
       content: "",
       imageUrl: "",
       additionalImages: [],
+      showOnHero: false,
+      heroDescription: "",
+      heroOrder: 0,
     });
     setIsModalOpen(true);
   };
@@ -1216,6 +1222,9 @@ export const AdminPosts: React.FC = () => {
       content: post.content || "",
       imageUrl: post.imageUrl || "",
       additionalImages: post.additionalImages || [],
+      showOnHero: !!post.showOnHero,
+      heroDescription: post.heroDescription || "",
+      heroOrder: typeof post.heroOrder === "number" ? post.heroOrder : 0,
     });
     setIsModalOpen(true);
   };
@@ -1241,8 +1250,183 @@ export const AdminPosts: React.FC = () => {
       post.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Filter and sort only active hero slides
+  const heroPosts = posts
+    .filter((post) => post.showOnHero && post.status === "Published")
+    .sort((a, b) => {
+      const aOrder = typeof a.heroOrder === "number" ? a.heroOrder : 0;
+      const bOrder = typeof b.heroOrder === "number" ? b.heroOrder : 0;
+      return aOrder - bOrder;
+    });
+
+  // Native drag sorting
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.setData("text/plain", index.toString());
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    const dragIndex = parseInt(e.dataTransfer.getData("text/plain"), 10);
+    if (isNaN(dragIndex) || dragIndex === targetIndex) return;
+
+    const updatedHeroPosts = [...heroPosts];
+    const [draggedItem] = updatedHeroPosts.splice(dragIndex, 1);
+    updatedHeroPosts.splice(targetIndex, 0, draggedItem);
+
+    // Save rearranged index sequentially
+    updatedHeroPosts.forEach((post, i) => {
+      updatePost(post.id, { heroOrder: i + 1 });
+    });
+  };
+
+  const handleMoveHeroPost = (index: number, direction: "up" | "down") => {
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= heroPosts.length) return;
+
+    const updatedHeroPosts = [...heroPosts];
+    const temp = updatedHeroPosts[index];
+    updatedHeroPosts[index] = updatedHeroPosts[targetIndex];
+    updatedHeroPosts[targetIndex] = temp;
+
+    updatedHeroPosts.forEach((post, i) => {
+      updatePost(post.id, { heroOrder: i + 1 });
+    });
+  };
+
   return (
     <AdminLayout>
+      {/* 메인 Hero 슬라이드 관리 대시보드 */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+        <div className="p-6 border-b border-gray-100 bg-brand-blue/[0.02]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <span className="p-1 px-2.5 bg-brand-blue/10 text-brand-blue rounded-full text-[11px] font-bold uppercase tracking-wider">Main slider</span>
+                메인 Hero 슬라이드 관리
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                대우경금속 첫 화면(Hero) 슬라이드 노출 게시글과 정렬 순서를 관리합니다.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Hero Slides List */}
+        <div className="p-6">
+          {heroPosts.length === 0 ? (
+            <div className="text-center py-10 border-2 border-dashed border-gray-100 rounded-2xl bg-gray-50/50">
+              <p className="text-gray-500 text-sm">현재 메인 Hero 섹션에 노출되도록 체크된 소식이 없습니다.</p>
+              <p className="text-xs text-gray-400 mt-1">게시글 관리 목록에서 '수정'을 누르고 [메인 Hero 섹션에 슬라이드로 노출하기]를 선택해 주세요.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="text-[11px] text-gray-400 mb-2 font-medium">
+                * 각 슬라이드를 마우스로 드래그하거나 우측의 화살표 버튼(↑, ↓)을 이용해 노출 순서를 편리하게 바꿀 수 있습니다.
+              </div>
+              <div className="grid grid-cols-1 gap-3">
+                {heroPosts.map((post, index) => (
+                  <div
+                    key={post.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, index)}
+                    className="flex items-center justify-between p-4 bg-white border border-gray-200/80 hover:border-brand-blue/35 rounded-xl transition-all duration-200 cursor-move group select-none shadow-sm hover:shadow"
+                  >
+                    <div className="flex items-center gap-4 min-w-0">
+                      {/* Drag Handle Indicator */}
+                      <div className="text-gray-300 group-hover:text-gray-400 flex flex-col gap-1 pr-1 cursor-grab">
+                        <div className="w-4 h-0.5 bg-current" />
+                        <div className="w-4 h-0.5 bg-current" />
+                        <div className="w-4 h-0.5 bg-current" />
+                      </div>
+
+                      {/* Sequence Badge */}
+                      <div className="w-7 h-7 rounded-lg bg-brand-blue/10 text-brand-blue flex items-center justify-center font-bold text-xs shrink-0">
+                        {index + 1}
+                      </div>
+
+                      {/* Tiny Image */}
+                      {post.imageUrl && (
+                        <div className="w-12 h-10 rounded-lg border border-gray-100 overflow-hidden shrink-0">
+                          <img
+                            src={post.imageUrl}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                        </div>
+                      )}
+
+                      {/* Content Info */}
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-[10px] font-bold">
+                            {post.category || "회사소식"}
+                          </span>
+                          <span className="text-[10px] text-gray-400 font-mono">
+                            {post.date}
+                          </span>
+                        </div>
+                        <h4 className="font-semibold text-sm text-gray-900 truncate max-w-[200px] sm:max-w-md">
+                          {post.title}
+                        </h4>
+                        <p className="text-xs text-gray-500 truncate max-w-[180px] sm:max-w-md italic mt-0.5">
+                          " {post.heroDescription || post.content?.replace(/<[^>]*>/g, "").trim().slice(0, 80) || "설명 없음" } "
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Action Controls */}
+                    <div className="flex items-center gap-1.5 shrink-0 pl-2">
+                      <button
+                        type="button"
+                        onClick={() => updatePost(post.id, { showOnHero: false })}
+                        className="px-2.5 py-1 bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border border-yellow-200/50 rounded-lg text-[11px] font-semibold transition-colors shrink-0"
+                        title="Hero 노출 취소"
+                      >
+                        노출 해제
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={index === 0}
+                        onClick={() => handleMoveHeroPost(index, "up")}
+                        className={`p-1.5 rounded-lg border transition-all shrink-0 ${
+                          index === 0
+                            ? "border-gray-50 text-gray-300 cursor-not-allowed"
+                            : "border-gray-200 hover:bg-gray-50 text-gray-600 active:scale-95"
+                        }`}
+                        title="위로 이동"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        disabled={index === heroPosts.length - 1}
+                        onClick={() => handleMoveHeroPost(index, "down")}
+                        className={`p-1.5 rounded-lg border transition-all shrink-0 ${
+                          index === heroPosts.length - 1
+                            ? "border-gray-50 text-gray-300 cursor-not-allowed"
+                            : "border-gray-200 hover:bg-gray-55 text-gray-600 active:scale-95"
+                        }`}
+                        title="아래로 이동"
+                      >
+                        ↓
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -1469,6 +1653,42 @@ export const AdminPosts: React.FC = () => {
                     <option value="Published">게시 (공개)</option>
                     <option value="Draft">임시 저장 (비공개)</option>
                   </select>
+                </div>
+
+                {/* 메인 Hero 노출 체크박스 및 Hero용 설명 */}
+                <div className="sm:col-span-2 border border-blue-105 rounded-2xl p-5 bg-brand-blue/[0.03] space-y-4">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="showOnHero"
+                      checked={formData.showOnHero}
+                      onChange={(e) => setFormData({ ...formData, showOnHero: e.target.checked })}
+                      className="w-5 h-5 rounded text-brand-blue border-gray-300 focus:ring-brand-blue cursor-pointer"
+                    />
+                    <label htmlFor="showOnHero" className="font-semibold text-gray-950 text-sm select-none cursor-pointer flex items-center gap-2">
+                      <span>메인 Hero 섹션에 슬라이드로 노출하기</span>
+                      <span className="text-[10px] font-bold text-brand-blue bg-brand-blue/10 border border-brand-blue/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        DMC Room Link
+                      </span>
+                    </label>
+                  </div>
+
+                  {formData.showOnHero && (
+                    <div className="space-y-3 pl-8 animate-fade-in">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                          Hero용 한글 설명 (미입력 시 본문 앞부분이 자동으로 한글 설명으로 등록됩니다)
+                        </label>
+                        <textarea
+                          rows={3}
+                          placeholder="메인 Hero 슬라이드에 노출될 짧고 임팩트 있는 설명을 입력해 주세요. (가독성을 위한 줄바꿈 적용 가능)"
+                          value={formData.heroDescription}
+                          onChange={(e) => setFormData({ ...formData, heroDescription: e.target.value })}
+                          className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-brand-blue text-sm font-sans bg-white"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

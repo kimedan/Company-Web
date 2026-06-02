@@ -44,6 +44,9 @@ export interface Post {
   content?: string; // HTML or Markdown content
   imageUrl?: string; // Representative thumbnail URL
   additionalImages?: string[]; // Multiple additional image URLs
+  showOnHero?: boolean;
+  heroDescription?: string;
+  heroOrder?: number;
 }
 
 export type BorderRadiusSize = 'rounded-none' | 'rounded-md' | 'rounded-xl' | 'rounded-full';

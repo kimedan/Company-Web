@@ -1,32 +1,82 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Play, X } from "lucide-react";
 import ScrollReveal from "./ScrollReveal";
 
 const PromoVideo: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 1200, height: 700 });
 
   // Video Configuration
   const videoId = "naTeRG6LQ8w";
   const siParam = "lqkesAld0AZtEWIr"; // Updated SI parameter from new snippet
   const startParam = "0"; // Start at 0 seconds
 
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const updateSize = () => {
+      if (containerRef.current) {
+        setDimensions({
+          width: containerRef.current.clientWidth,
+          height: containerRef.current.clientHeight,
+        });
+      }
+    };
+
+    updateSize();
+
+    // Use ResizeObserver for precise container monitoring
+    const observer = new ResizeObserver(() => {
+      updateSize();
+    });
+    observer.observe(containerRef.current);
+
+    window.addEventListener("resize", updateSize);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateSize);
+    };
+  }, []);
+
+  // Compute 16:9 Cover Size with safety buffer
+  let iframeWidth = dimensions.width;
+  let iframeHeight = dimensions.width * (9 / 16);
+
+  if (iframeHeight < dimensions.height) {
+    iframeHeight = dimensions.height;
+    iframeWidth = dimensions.height * (16 / 9);
+  }
+
+  // 1.05x multiplier ensures video edges are tucked safely behind the hidden container seams
+  const finalWidth = iframeWidth * 1.05;
+  const finalHeight = iframeHeight * 1.05;
+
   return (
     <>
       <section
+        ref={containerRef}
         className="relative h-[500px] md:h-[700px] w-full overflow-hidden bg-black group cursor-pointer"
         onClick={() => setIsOpen(true)}
       >
         {/* Background Video (Muted, Autoplay, No Controls) */}
         {/* Used youtube-nocookie.com and correct referrerPolicy */}
-        <div className="absolute inset-0 w-full h-full pointer-events-none opacity-60">
+        <div className="absolute inset-0 w-full h-full pointer-events-none opacity-60 overflow-hidden flex items-center justify-center">
           <iframe
-            className="w-full h-[140%] -mt-[20%] scale-[1.5] md:scale-[1.3]"
-            src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&controls=0&start=${startParam}&si=${siParam}&playsinline=1&rel=0`}
+            style={{
+              width: `${finalWidth}px`,
+              height: `${finalHeight}px`,
+              pointerEvents: "none",
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
+            src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&controls=0&start=${startParam}&si=${siParam}&playsinline=1&rel=0&playlist=${videoId}&loop=1`}
             title="Promo Background"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerPolicy="strict-origin-when-cross-origin"
-            style={{ pointerEvents: "none" }}
           ></iframe>
         </div>
 
